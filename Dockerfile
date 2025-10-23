@@ -76,17 +76,11 @@ FROM alpine:latest
 ARG MINIO_VERSION=latest
 ARG TARGETARCH
 
-LABEL name="Object Storage with Web Console" \
-      vendor="MinIO Inc <dev@min.io>" \
-      maintainer="Anurag Vishwakarma <av7312002@gmail.com>" \
+LABEL maintainer="Anurag Vishwakarma <av7312002@gmail.com>" \
       version="${MINIO_VERSION}" \
-      release="${MINIO_VERSION}" \
-      summary="High Performance Object Storage with Full-featured Web Console" \
-      description="S3-compatible object storage with complete web-based management interface. Built from source for security and performance." \
       org.opencontainers.image.source="https://github.com/minio/minio" \
       org.opencontainers.image.version="${MINIO_VERSION}" \
-      org.opencontainers.image.licenses="AGPL-3.0" \
-      architecture="${TARGETARCH}"
+      org.opencontainers.image.licenses="AGPL-3.0"
 
 # Install runtime dependencies and create user
 RUN apk add --no-cache ca-certificates curl bash && \
@@ -109,9 +103,7 @@ COPY start.sh /usr/bin/start.sh
 RUN chmod +x /usr/bin/start.sh
 
 # Server configuration
-ENV MINIO_ROOT_USER=minioadmin \
-    MINIO_ROOT_PASSWORD=minioadmin \
-    MINIO_UPDATE_MINISIGN_PUBKEY="RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav" \
+ENV MINIO_UPDATE_MINISIGN_PUBKEY="RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav" \
     MC_CONFIG_DIR=/tmp/.mc
 
 # Console configuration
