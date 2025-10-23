@@ -9,7 +9,7 @@ RUN apk add --no-cache git && \
     git clone https://github.com/OpenMaxIO/openmaxio-object-browser.git . && \
     git checkout v1.7.6 && \
     cd web-app && \
-    yarn install --frozen-lockfile && \
+    yarn install --frozen-lockfile --ignore-optional && \
     yarn build
 
 # Build console binary
