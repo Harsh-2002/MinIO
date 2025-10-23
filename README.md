@@ -59,6 +59,7 @@ services:
 | `MINIO_ROOT_PASSWORD` | Root password | `SecurePass123!` |
 | `CONSOLE_PBKDF_PASSPHRASE` | Console encryption passphrase | `your-secret-passphrase` |
 | `CONSOLE_PBKDF_SALT` | Console encryption salt | `your-secret-salt` |
+| `CONSOLE_MINIO_REGION` | Console MinIO region (inherits from MINIO_REGION) | `us-east-1` |
 
 ## Port Configuration
 
@@ -67,6 +68,7 @@ services:
 | `MINIO_API_PORT` | `9000` | MinIO API port |
 | `MINIO_CONSOLE_PORT` | `9001` | MinIO console port |
 | `OPENMAXIO_CONSOLE_PORT` | `9090` | OpenMaxIO console port |
+| `MINIO_REGION` | `us-east-1` | AWS S3 region for compatibility |
 
 ## Using MinIO Client
 
