@@ -108,8 +108,9 @@ ENV MINIO_UPDATE_MINISIGN_PUBKEY="RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVW
 
 # Console configuration
 ENV CONSOLE_MINIO_SERVER=http://localhost:9000 \
-    CONSOLE_PBKDF_PASSPHRASE=$(openssl rand -base64 32) \
-    CONSOLE_PBKDF_SALT=$(openssl rand -base64 32)
+    CONSOLE_PBKDF_PASSPHRASE=zlBbOOrxsxL2zN4Zdx+8AXwK7dlqwdQFqZhiAy8genE= \
+    CONSOLE_PBKDF_SALT=2ByW2Hh5UNsVX+SBTio9nzlrFDDArcZPCjdv7vWMoXttMYYIEQRntEft+12IR66C
+    9/5YtkG2fNYayWrk1NP2Eg==
 
 # Configurable ports
 ENV MINIO_API_PORT=9000 \
