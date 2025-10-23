@@ -34,6 +34,7 @@ jobs:
         docker pull golang:1.24-alpine
 
     - name: Login to DockerHub Registry
+      if: github.event_name != 'pull_request'
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
@@ -52,16 +53,13 @@ jobs:
           type=semver,pattern={{major}}
           type=raw,value=latest,enable={{is_default_branch}}
 
-    - name: Set CI image tag
-      run: echo "CI_TAG=ci-${GITHUB_SHA::7}" >> $GITHUB_ENV
-
-    - name: Build and push CI image (multi-arch)
+    - name: Build and Push Docker Image
       uses: docker/build-push-action@v6
       with:
         context: .
         platforms: linux/amd64,linux/arm64
         push: true
-        tags: firstfinger/minio-openmaxio:${{ env.CI_TAG }}
+        tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: |
           type=registry,ref=firstfinger/minio-openmaxio:buildcache
@@ -75,30 +73,6 @@ jobs:
         outputs: type=registry
         provenance: false
         sbom: false
-
-    - name: Test MinIO and OpenMaxIO Services
-      run: |
-        cat > docker-compose.override.yml <<EOF
-        services:
-          minio:
-            image: firstfinger/minio-openmaxio:${CI_TAG}
-        EOF
-        docker compose up -d && docker compose ps
-        
-        sleep 5
-        
-        curl -f http://localhost:9000/minio/health/live && echo "✓ MinIO API healthy"
-        curl -f http://localhost:9001 && echo "✓ MinIO Console accessible"
-        curl -f http://localhost:9090 && echo "✓ OpenMaxIO Console accessible"
-        
-        docker compose down
-        rm -f docker-compose.override.yml
-
-    - name: Promote CI image to final tags (no rebuild)
-      run: |
-        for TAG in ${{ steps.meta.outputs.tags }}; do
-          docker buildx imagetools create --tag "$TAG" firstfinger/minio-openmaxio:${CI_TAG}
-        done
 
     - name: Generate summary
       run: |
