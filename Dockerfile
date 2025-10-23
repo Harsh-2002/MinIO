@@ -8,9 +8,9 @@ WORKDIR /app
 RUN apk add --no-cache git && \
     corepack enable && \
     git clone https://github.com/OpenMaxIO/openmaxio-object-browser.git . && \
-    git checkout v1.7.6 && \
+    git checkout $(git describe --tags --abbrev=0) && \
     cd web-app && \
-    yarn install --frozen-lockfile && \
+    yarn install && \
     yarn build
 
 # Build console binary
@@ -18,7 +18,7 @@ FROM golang:1.24-alpine AS console-builder
 WORKDIR /app
 RUN apk add --no-cache git make && \
     git clone https://github.com/OpenMaxIO/openmaxio-object-browser.git . && \
-    git checkout v1.7.6
+    git checkout $(git describe --tags --abbrev=0)
 COPY --from=console-ui-builder /app/web-app/build ./web-app/build
 RUN make console
 
