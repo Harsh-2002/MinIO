@@ -9,25 +9,36 @@ RUN apk add --no-cache git && \
     git clone https://github.com/OpenMaxIO/openmaxio-object-browser.git . && \
     git checkout v1.7.6 && \
     cd web-app && \
-    yarn install --ignore-optional && \
+    yarn install --frozen-lockfile && \
     yarn build
 
 # Build console binary
 FROM golang:1.24-alpine AS console-builder
+# Add architecture arguments
+ARG TARGETARCH
+ARG TARGETOS=linux
 WORKDIR /app
 RUN apk add --no-cache git make && \
     git clone https://github.com/OpenMaxIO/openmaxio-object-browser.git . && \
     git checkout v1.7.6
 COPY --from=console-ui-builder /app/web-app/build ./web-app/build
+# Set GOOS and GOARCH for proper cross-compilation
+ENV GOOS=${TARGETOS} GOARCH=${TARGETARCH} CGO_ENABLED=0
 RUN make console
 
 # Build storage server from source
 FROM golang:1.24-alpine AS server-builder
 
 ARG MINIO_VERSION=latest
+# Add architecture arguments
+ARG TARGETARCH
+ARG TARGETOS=linux
 
 ENV GOPATH=/go
 ENV CGO_ENABLED=0
+# Set GOOS and GOARCH for proper cross-compilation
+ENV GOOS=${TARGETOS}
+ENV GOARCH=${TARGETARCH}
 
 WORKDIR /workspace
 
@@ -52,9 +63,9 @@ RUN COMMIT_ID=$(git rev-parse --short HEAD) && \
     -o /usr/bin/minio . && \
     /usr/bin/minio --version
 
-# Download and verify client binary
-RUN curl -s -q https://dl.min.io/client/mc/release/linux-${BUILDARCH}/mc -o /usr/bin/mc && \
-    curl -s -q https://dl.min.io/client/mc/release/linux-${BUILDARCH}/mc.minisig -o /usr/bin/mc.minisig && \
+# Download and verify client binary - use TARGETARCH instead of BUILDARCH
+RUN curl -s -q https://dl.min.io/client/mc/release/linux-${TARGETARCH}/mc -o /usr/bin/mc && \
+    curl -s -q https://dl.min.io/client/mc/release/linux-${TARGETARCH}/mc.minisig -o /usr/bin/mc.minisig && \
     chmod +x /usr/bin/mc && \
     /go/bin/minisign -Vqm /usr/bin/mc -x /usr/bin/mc.minisig -P RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav && \
     /usr/bin/mc --version
@@ -63,6 +74,7 @@ RUN curl -s -q https://dl.min.io/client/mc/release/linux-${BUILDARCH}/mc -o /usr
 FROM alpine:latest
 
 ARG MINIO_VERSION=latest
+ARG TARGETARCH
 
 LABEL name="Object Storage with Web Console" \
       vendor="MinIO Inc <dev@min.io>" \
@@ -73,7 +85,8 @@ LABEL name="Object Storage with Web Console" \
       description="S3-compatible object storage with complete web-based management interface. Built from source for security and performance." \
       org.opencontainers.image.source="https://github.com/minio/minio" \
       org.opencontainers.image.version="${MINIO_VERSION}" \
-      org.opencontainers.image.licenses="AGPL-3.0"
+      org.opencontainers.image.licenses="AGPL-3.0" \
+      architecture="${TARGETARCH}"
 
 # Install runtime dependencies and create user
 RUN apk add --no-cache ca-certificates curl bash && \
