@@ -53,12 +53,33 @@ jobs:
           type=semver,pattern={{major}}
           type=raw,value=latest,enable={{is_default_branch}}
 
-    - name: Build and Push Docker Image
+    - name: Build Docker Image
       uses: docker/build-push-action@v6
       with:
         context: .
         platforms: linux/amd64,linux/arm64
-        push: ${{ github.event_name != 'pull_request' }}
+        push: false
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: |
+          type=registry,ref=firstfinger/minio-openmaxio:buildcache
+          type=gha
+        cache-to: |
+          type=registry,ref=firstfinger/minio-openmaxio:buildcache,mode=max
+          type=gha,mode=max
+        build-args: |
+          MINIO_VERSION=latest
+          BUILDKIT_INLINE_CACHE=1
+        outputs: type=registry
+        provenance: false
+        sbom: false
+
+    - name: Push Docker Image
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        platforms: linux/amd64,linux/arm64
+        push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: |
@@ -75,12 +96,10 @@ jobs:
         sbom: false
 
     - name: Verify OpenMaxIO Version
-      if: github.event_name != 'pull_request'
       run: |
         docker build -t test-image . 2>&1 | grep -E "switching to|checkout|v[0-9]+\.[0-9]+\.[0-9]+" || echo "No version info found in logs"
 
     - name: Test Services
-      if: github.event_name != 'pull_request'
       run: |
         docker compose up -d
         
@@ -94,7 +113,6 @@ jobs:
         docker compose down
 
     - name: Generate summary
-      if: github.event_name != 'pull_request'
       run: |
         echo "## 🎉 Build Summary" >> $GITHUB_STEP_SUMMARY
         echo "- **Image**: firstfinger/minio-openmaxio:latest" >> $GITHUB_STEP_SUMMARY
