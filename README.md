@@ -19,7 +19,7 @@ MinIO removed pre-compiled binaries and full console features from recent releas
 
 ```bash
 # Build
-docker build -t minio-openmaxio:latest .
+docker build -t firstfinger/minio-openmaxio:latest .
 
 # Run
 docker run -d --name minio \
@@ -27,7 +27,7 @@ docker run -d --name minio \
   -v ./data:/data \
   -e MINIO_ROOT_USER=admin \
   -e MINIO_ROOT_PASSWORD=your-password \
-  minio-openmaxio:latest
+  firstfinger/minio-openmaxio:latest
 ```
 
 ## Access Points
@@ -38,33 +38,59 @@ docker run -d --name minio \
 | **MinIO Console** | http://localhost:9001 | Basic built-in UI |
 | **OpenMaxIO Console** | http://localhost:9090 | Full-featured admin UI ⭐ |
 
-## Configuration
+## Environment Variables
 
-### Ports (Configurable)
-```bash
--e MINIO_API_PORT=9000           # MinIO API port
--e MINIO_CONSOLE_PORT=9001       # MinIO console port  
--e OPENMAXIO_CONSOLE_PORT=9090   # OpenMaxIO console port
-```
+### Required Variables
 
-### Credentials
-```bash
--e MINIO_ROOT_USER=admin
--e MINIO_ROOT_PASSWORD=your-secure-password
-```
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `MINIO_ROOT_USER` | Root username for MinIO access | `admin` |
+| `MINIO_ROOT_PASSWORD` | Root password for MinIO access | `SecurePass123!` |
 
-### Console Encryption (Optional)
-```bash
--e CONSOLE_PBKDF_PASSPHRASE=your-passphrase
--e CONSOLE_PBKDF_SALT=your-salt
-```
+### Console Encryption (Recommended)
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `CONSOLE_PBKDF_PASSPHRASE` | Encryption passphrase for console | `your-secret-passphrase` |
+| `CONSOLE_PBKDF_SALT` | Encryption salt for console | `your-secret-salt` |
+
+### Optional MinIO Configuration
+
+| Variable | Description | Default | Example |
+|----------|-------------|---------|---------|
+| `MINIO_BROWSER` | Enable/disable web browser access | `on` | `on` or `off` |
+| `MINIO_DOMAIN` | Domain name for virtual-host requests | - | `minio.example.com` |
+| `MINIO_REGION_NAME` | Default region for buckets | `us-east-1` | `us-west-2` |
+| `MINIO_LOG_LEVEL` | Logging level | `info` | `debug`, `info`, `error` |
+| `MINIO_CERT_PASSWD` | Password for encrypted TLS certificates | - | `cert-password` |
+| `MINIO_UPDATE_MINISIGN_PUBKEY` | Public key for binary verification | Built-in | `RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav` |
+
+### Port Configuration
+
+| Variable | Description | Default | Example |
+|----------|-------------|---------|---------|
+| `MINIO_API_PORT` | MinIO API port | `9000` | `8000` |
+| `MINIO_CONSOLE_PORT` | MinIO console port | `9001` | `8001` |
+| `OPENMAXIO_CONSOLE_PORT` | OpenMaxIO console port | `9090` | `8090` |
+
+### Advanced Configuration
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `MINIO_KMS_KES_ENDPOINT` | Key Encryption Service endpoint | `https://kes.example.com:7373` |
+| `MINIO_KMS_KES_KEY_FILE` | Path to KES private key | `/path/to/key.pem` |
+| `MINIO_KMS_KES_CERT_FILE` | Path to KES certificate | `/path/to/cert.pem` |
+| `MINIO_KMS_KES_KEY_NAME` | External key name for encryption | `my-key` |
+| `MINIO_API_REQUESTS_MAX` | Maximum API requests | `1000` |
+| `MINIO_STORAGE_CLASS_STANDARD` | Standard storage class | `EC:4` |
+| `MINIO_LOGGER_HTTP_ENDPOINT` | HTTP endpoint for logs | `http://logger.example.com` |
 
 ## Docker Compose
 
 ```yaml
 services:
   minio:
-    image: minio-openmaxio:latest
+    image: firstfinger/minio-openmaxio:latest
     ports:
       - "9000:9000"
       - "9001:9001" 
@@ -80,10 +106,10 @@ services:
 
 ```bash
 # Default (latest MinIO)
-docker build -t minio-openmaxio:latest .
+docker build -t firstfinger/minio-openmaxio:latest .
 
 # Specific MinIO version
-docker build --build-arg MINIO_VERSION=RELEASE.2025-01-15T10-44-24Z -t minio-openmaxio:latest .
+docker build --build-arg MINIO_VERSION=RELEASE.2025-01-15T10-44-24Z -t firstfinger/minio-openmaxio:latest .
 ```
 
 ## Using MinIO Client
