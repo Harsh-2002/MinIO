@@ -11,7 +11,17 @@ on:
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        platform: [linux/amd64, linux/arm64]
+        include:
+          - platform: linux/amd64
+            arch: amd64
+            runner: ubuntu-latest
+          - platform: linux/arm64  
+            arch: arm64
+            runner: ubuntu-latest
     permissions:
       contents: read
       packages: write
@@ -57,15 +67,15 @@ jobs:
       uses: docker/build-push-action@v6
       with:
         context: .
-        platforms: linux/amd64,linux/arm64
+        platforms: ${{ matrix.platform }}
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: |
-          type=registry,ref=firstfinger/minio-openmaxio:buildcache
+          type=registry,ref=firstfinger/minio-openmaxio:buildcache-${{ matrix.arch }}
           type=gha
         cache-to: |
-          type=registry,ref=firstfinger/minio-openmaxio:buildcache,mode=max
+          type=registry,ref=firstfinger/minio-openmaxio:buildcache-${{ matrix.arch }},mode=max
           type=gha,mode=max
         build-args: |
           MINIO_VERSION=latest
@@ -76,9 +86,10 @@ jobs:
 
     - name: Generate summary
       run: |
-        echo "## 🎉 Build Summary" >> $GITHUB_STEP_SUMMARY
+        echo "## 🎉 Build Summary - ${{ matrix.arch }}" >> $GITHUB_STEP_SUMMARY
         echo "- **Image**: firstfinger/minio-openmaxio:latest" >> $GITHUB_STEP_SUMMARY
-        echo "- **Platforms**: linux/amd64, linux/arm64" >> $GITHUB_STEP_SUMMARY
+        echo "- **Platform**: ${{ matrix.platform }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Architecture**: ${{ matrix.arch }}" >> $GITHUB_STEP_SUMMARY
         echo "- **MinIO Version**: Latest (built from source)" >> $GITHUB_STEP_SUMMARY
         echo "- **OpenMaxIO Version**: v1.7.6 (stable working version)" >> $GITHUB_STEP_SUMMARY
         echo "- **Status**: ✅ Successfully built and pushed" >> $GITHUB_STEP_SUMMARY
