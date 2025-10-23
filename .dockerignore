@@ -1,0 +1,35 @@
+# Data directories
+data/
+
+# Documentation
+README.md
+*.md
+
+# Docker files
+docker-compose.yml
+.dockerignore
+
+# Git files
+.git/
+.gitignore
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.local
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Certificates
+*.pem
+*.key
+*.crt
+certs/

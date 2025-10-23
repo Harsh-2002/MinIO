@@ -1,0 +1,23 @@
+# Data directories
+data/
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.local
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Certificates
+*.pem
+*.key
+*.crt
+certs/
