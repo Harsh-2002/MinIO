@@ -37,11 +37,6 @@ jobs:
           image=moby/buildkit:latest
           network=host
 
-    - name: Pre-pull Base Images
-      run: |
-        docker pull alpine:latest
-        docker pull node:18-alpine
-        docker pull golang:1.24-alpine
 
     - name: Login to DockerHub Registry
       if: github.event_name != 'pull_request'
@@ -71,15 +66,8 @@ jobs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        cache-from: |
-          type=registry,ref=firstfinger/minio-openmaxio:buildcache-${{ matrix.arch }}
-          type=gha
-        cache-to: |
-          type=registry,ref=firstfinger/minio-openmaxio:buildcache-${{ matrix.arch }},mode=max
-          type=gha,mode=max
         build-args: |
           MINIO_VERSION=latest
-          BUILDKIT_INLINE_CACHE=1
         outputs: type=registry
         provenance: false
         sbom: false
