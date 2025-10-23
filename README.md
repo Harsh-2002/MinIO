@@ -10,7 +10,7 @@ A custom Docker image that combines the latest MinIO server with the full-featur
 
 ## Why This Image?
 
-MinIO removed pre-compiled binaries and full console features from recent releases. This image solves that by:
+MinIO removed pre-compiled binaries/Docker Images and full console features from recent releases. This image solves that by:
 - Building MinIO from source with latest features
 - Including OpenMaxIO Console with all admin features
 - Providing a single, production-ready image
