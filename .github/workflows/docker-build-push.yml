@@ -53,7 +53,7 @@ jobs:
           type=semver,pattern={{major}}
           type=raw,value=latest,enable={{is_default_branch}}
 
-    - name: Build Docker Image (Test)
+    - name: Build Docker Image
       uses: docker/build-push-action@v6
       with:
         context: .
@@ -78,20 +78,19 @@ jobs:
       run: |
         docker build -t test-image . 2>&1 | grep -E "switching to|checkout|v[0-9]+\.[0-9]+\.[0-9]+" || echo "No version info found in logs"
 
-    - name: Test Services
+    - name: Test MinIO and OpenMaxIO Services
       run: |
-        docker compose up -d
+        docker compose up -d && docker compose ps
         
-        sleep 30
+        sleep 5
         
         curl -f http://localhost:9000/minio/health/live && echo "✓ MinIO API healthy"
         curl -f http://localhost:9001 && echo "✓ MinIO Console accessible"
         curl -f http://localhost:9090 && echo "✓ OpenMaxIO Console accessible"
         
-        docker compose ps
         docker compose down
 
-    - name: Push Docker Image
+    - name: Push Final Docker Image
       uses: docker/build-push-action@v6
       with:
         context: .
