@@ -1,6 +1,5 @@
 # Multi-stage build for object storage with web console
 ARG MINIO_VERSION=latest
-ARG TARGETARCH=amd64
 
 # Build web console UI
 FROM node:18-alpine AS console-ui-builder
@@ -10,7 +9,7 @@ RUN apk add --no-cache git && \
     git clone https://github.com/OpenMaxIO/openmaxio-object-browser.git . && \
     git checkout v1.7.6 && \
     cd web-app && \
-    yarn install && \
+    yarn install --ignore-optional && \
     yarn build
 
 # Build console binary
@@ -25,8 +24,7 @@ RUN make console
 # Build storage server from source
 FROM golang:1.24-alpine AS server-builder
 
-ARG MINIO_VERSION
-ARG TARGETARCH
+ARG MINIO_VERSION=latest
 
 ENV GOPATH=/go
 ENV CGO_ENABLED=0
@@ -55,8 +53,8 @@ RUN COMMIT_ID=$(git rev-parse --short HEAD) && \
     /usr/bin/minio --version
 
 # Download and verify client binary
-RUN curl -s -q https://dl.min.io/client/mc/release/linux-${TARGETARCH}/mc -o /usr/bin/mc && \
-    curl -s -q https://dl.min.io/client/mc/release/linux-${TARGETARCH}/mc.minisig -o /usr/bin/mc.minisig && \
+RUN curl -s -q https://dl.min.io/client/mc/release/linux-${BUILDARCH}/mc -o /usr/bin/mc && \
+    curl -s -q https://dl.min.io/client/mc/release/linux-${BUILDARCH}/mc.minisig -o /usr/bin/mc.minisig && \
     chmod +x /usr/bin/mc && \
     /go/bin/minisign -Vqm /usr/bin/mc -x /usr/bin/mc.minisig -P RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav && \
     /usr/bin/mc --version
@@ -64,8 +62,7 @@ RUN curl -s -q https://dl.min.io/client/mc/release/linux-${TARGETARCH}/mc -o /us
 # Final runtime image
 FROM alpine:latest
 
-ARG MINIO_VERSION
-ARG TARGETARCH
+ARG MINIO_VERSION=latest
 
 LABEL name="Object Storage with Web Console" \
       vendor="MinIO Inc <dev@min.io>" \
