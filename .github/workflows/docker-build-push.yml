@@ -59,7 +59,7 @@ jobs:
         context: .
         platforms: linux/amd64,linux/arm64
         push: false
-        tags: ${{ steps.meta.outputs.tags }}
+        tags: firstfinger/minio-openmaxio:test
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: |
           type=registry,ref=firstfinger/minio-openmaxio:buildcache
@@ -70,9 +70,26 @@ jobs:
         build-args: |
           MINIO_VERSION=latest
           BUILDKIT_INLINE_CACHE=1
-        outputs: type=registry
+        outputs: type=docker
         provenance: false
         sbom: false
+
+    - name: Verify OpenMaxIO Version
+      run: |
+        docker build -t test-image . 2>&1 | grep -E "switching to|checkout|v[0-9]+\.[0-9]+\.[0-9]+" || echo "No version info found in logs"
+
+    - name: Test Services
+      run: |
+        docker compose up -d
+        
+        sleep 30
+        
+        curl -f http://localhost:9000/minio/health/live && echo "✓ MinIO API healthy"
+        curl -f http://localhost:9001 && echo "✓ MinIO Console accessible"
+        curl -f http://localhost:9090 && echo "✓ OpenMaxIO Console accessible"
+        
+        docker compose ps
+        docker compose down
 
     - name: Push Docker Image
       uses: docker/build-push-action@v6
@@ -94,23 +111,6 @@ jobs:
         outputs: type=registry
         provenance: false
         sbom: false
-
-    - name: Verify OpenMaxIO Version
-      run: |
-        docker build -t test-image . 2>&1 | grep -E "switching to|checkout|v[0-9]+\.[0-9]+\.[0-9]+" || echo "No version info found in logs"
-
-    - name: Test Services
-      run: |
-        docker compose up -d
-        
-        sleep 30
-        
-        curl -f http://localhost:9000/minio/health/live && echo "✓ MinIO API healthy"
-        curl -f http://localhost:9001 && echo "✓ MinIO Console accessible"
-        curl -f http://localhost:9090 && echo "✓ OpenMaxIO Console accessible"
-        
-        docker compose ps
-        docker compose down
 
     - name: Generate summary
       run: |
