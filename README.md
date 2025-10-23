@@ -103,4 +103,4 @@ curl http://localhost:9000/minio/health/live
 ```
 
 ## License
-- You just DO WHAT THE FUCK YOU WANT TO. 
+You just DO WHAT THE FUCK YOU WANT TO. 
