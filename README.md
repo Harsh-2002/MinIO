@@ -1,5 +1,7 @@
 # MinIO + Admin Console Docker Image
 
+[![Docker Hub](https://img.shields.io/badge/Docker%20Hub-firstfinger%2Fminio-blue)](https://hub.docker.com/r/firstfinger/minio)
+
 A production-ready Docker image that combines the latest MinIO server with the full-featured MinIO Admin Console. Everything you need for object storage with a complete web interface.
 
 ## What's Included
