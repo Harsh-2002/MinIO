@@ -45,13 +45,14 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Extract Metadata for Docker Image
+    - name: Extract metadata for Docker
       id: meta
       uses: docker/metadata-action@v5
       with:
         images: firstfinger/minio
         tags: |
-          type=raw,value=latest
+          type=raw,value=latest-arm64,enable=${{ matrix.platform == 'linux/arm64' }}
+          type=raw,value=latest-amd64,enable=${{ matrix.platform == 'linux/amd64' }}
 
     - name: Build and Push Docker Image
       uses: docker/build-push-action@v6

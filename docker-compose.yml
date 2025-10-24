@@ -1,6 +1,7 @@
 services:
   minio:
-    image: firstfinger/minio:latest
+    # To use an ARM64 image, create a .env file with: MINIO_IMAGE_TAG=latest-arm64
+    image: firstfinger/minio:${MINIO_IMAGE_TAG:-latest-amd64}
     container_name: minio
     ports:
       - "9000:9000"

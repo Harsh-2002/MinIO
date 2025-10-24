@@ -28,10 +28,38 @@ docker run -d --name minio \
   -v ./data:/data \
   -e MINIO_ROOT_USER=UL5YXh4vjy3yEAaS4eW8 \
   -e MINIO_ROOT_PASSWORD=36bpUPfiptWp6M7uBFsM75uKbPXZgW \
-  firstfinger/minio:latest
+  firstfinger/minio:latest-amd64
+```
+
+## Image Tags
+
+This image is built for multiple architectures. You must select the tag that matches your system's architecture:
+
+- **`latest-amd64`**: The image for `x86-64` (amd64) architectures.
+- **`latest-arm64`**: The image for `arm64` architectures.
+
+For example, to run on an `x86-64` machine:
+```bash
+docker run -d --name minio \
+  -p 9000:9000 \
+  -p 9001:9001 \
+  -p 9002:9002 \
+  -v ./data:/data \
+  -e MINIO_ROOT_USER=UL5YXh4vjy3yEAaS4eW8 \
+  -e MINIO_ROOT_PASSWORD=36bpUPfiptWp6M7uBFsM75uKbPXZgW \
+  firstfinger/minio:latest-amd64
 ```
 
 ### Docker Compose
+
+By default, the `docker-compose.yml` file uses the `latest-amd64` tag. To use the `arm64` image, create a `.env` file in the same directory with the following content:
+
+```
+MINIO_IMAGE_TAG=latest-arm64
+```
+
+Then, run the standard command:
+
 ```bash
 docker compose up -d
 ```
