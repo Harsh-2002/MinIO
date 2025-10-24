@@ -27,6 +27,7 @@ docker run -d --name minio \
   -e MINIO_ROOT_USER=admin \
   -e MINIO_ROOT_PASSWORD=your-password \
   -e MINIO_REGION=us-east-1 \
+  -e CONSOLE_MINIO_REGION=us-east-1 \
   -e CONSOLE_PBKDF_PASSPHRASE=your-passphrase \
   -e CONSOLE_PBKDF_SALT=your-salt \
   firstfinger/minio:latest
@@ -52,6 +53,7 @@ services:
       MINIO_ROOT_USER: admin
       MINIO_ROOT_PASSWORD: your-password
       MINIO_REGION: us-east-1  # REQUIRED: Set your AWS region
+      CONSOLE_MINIO_REGION: us-east-1  # REQUIRED: Set same region as MINIO_REGION
       CONSOLE_PBKDF_PASSPHRASE: your-passphrase
       CONSOLE_PBKDF_SALT: your-salt
 ```
@@ -71,10 +73,11 @@ services:
 | `MINIO_ROOT_USER` | Root username | `admin` |
 | `MINIO_ROOT_PASSWORD` | Root password | `SecurePass123!` |
 | `MINIO_REGION` | **REQUIRED** AWS S3 region | `us-east-1` |
+| `CONSOLE_MINIO_REGION` | **REQUIRED** Console region (same as MINIO_REGION) | `us-east-1` |
 | `CONSOLE_PBKDF_PASSPHRASE` | Console encryption passphrase | `your-secret-passphrase` |
 | `CONSOLE_PBKDF_SALT` | Console encryption salt | `your-secret-salt` |
 
-> **Note**: `CONSOLE_MINIO_REGION` automatically inherits from `MINIO_REGION` - no need to set it separately.
+> **Important**: Both `MINIO_REGION` and `CONSOLE_MINIO_REGION` must be set to the same value to avoid authorization errors.
 
 ## Port Configuration
 
@@ -114,7 +117,7 @@ docker exec minio mc cp /path/to/file local/mybucket/
 
 **Docker Compose:** Use `docker compose` (not `docker-compose`)
 
-**Region errors:** Ensure `MINIO_REGION` is set (e.g., `us-east-1`, `ap-south-1`)
+**Region errors:** Ensure both `MINIO_REGION` and `CONSOLE_MINIO_REGION` are set to the same value (e.g., `us-east-1`, `ap-south-1`)
 
 ## Health Check
 

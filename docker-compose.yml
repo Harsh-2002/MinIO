@@ -14,6 +14,7 @@ services:
       CONSOLE_PBKDF_PASSPHRASE: dBY2RpcZsDyngFKa  # Change this to your own passphrase
       CONSOLE_PBKDF_SALT: iT2cpVzb8tXPiMr6HJGxJ9otEZo5AVop  # Change this to your own salt
       MINIO_REGION: us-east-1  # REQUIRED: Set your AWS region
+      CONSOLE_MINIO_REGION: us-east-1  # REQUIRED: Set same region as MINIO_REGION
       MINIO_API_PORT: 9000
       MINIO_CONSOLE_PORT: 9001
       MINIO_ADMIN_CONSOLE_PORT: 9090
