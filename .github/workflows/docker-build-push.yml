@@ -49,7 +49,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: firstfinger/minio-openmaxio
+        images: firstfinger/minio
         tags: |
           type=ref,event=branch
           type=ref,event=pr
@@ -75,9 +75,9 @@ jobs:
     - name: Generate summary
       run: |
         echo "## 🎉 Build Summary - ${{ matrix.arch }}" >> $GITHUB_STEP_SUMMARY
-        echo "- **Image**: firstfinger/minio-openmaxio:latest" >> $GITHUB_STEP_SUMMARY
+        echo "- **Image**: firstfinger/minio:latest" >> $GITHUB_STEP_SUMMARY
         echo "- **Platform**: ${{ matrix.platform }}" >> $GITHUB_STEP_SUMMARY
         echo "- **Architecture**: ${{ matrix.arch }}" >> $GITHUB_STEP_SUMMARY
         echo "- **MinIO Version**: Latest (built from source)" >> $GITHUB_STEP_SUMMARY
-        echo "- **OpenMaxIO Version**: v1.7.6 (stable working version)" >> $GITHUB_STEP_SUMMARY
+        echo "- **MinIO Admin Console Version**: v1.7.6 (stable working version)" >> $GITHUB_STEP_SUMMARY
         echo "- **Status**: ✅ Successfully built and pushed" >> $GITHUB_STEP_SUMMARY

@@ -6,7 +6,7 @@ FROM node:18-alpine AS console-ui-builder
 WORKDIR /app
 RUN apk add --no-cache git && \
     corepack enable && \
-    git clone https://github.com/OpenMaxIO/openmaxio-object-browser.git . && \
+    git clone https://github.com/minio/object-browser.git . && \
     git checkout v1.7.6 && \
     cd web-app && \
     yarn install --frozen-lockfile && \
@@ -19,7 +19,7 @@ ARG TARGETARCH
 ARG TARGETOS=linux
 WORKDIR /app
 RUN apk add --no-cache git make && \
-    git clone https://github.com/OpenMaxIO/openmaxio-object-browser.git . && \
+    git clone https://github.com/minio/object-browser.git . && \
     git checkout v1.7.6
 COPY --from=console-ui-builder /app/web-app/build ./web-app/build
 # Set GOOS and GOARCH for proper cross-compilation
@@ -115,7 +115,7 @@ ENV CONSOLE_MINIO_SERVER=http://localhost:9000 \
 # Configurable ports
 ENV MINIO_API_PORT=9000 \
     MINIO_CONSOLE_PORT=9001 \
-    OPENMAXIO_CONSOLE_PORT=9090
+    MINIO_ADMIN_CONSOLE_PORT=9090
 
 # Expose ports
 EXPOSE 9000 9001 9090

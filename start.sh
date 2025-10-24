@@ -4,12 +4,12 @@ set -e
 # Default port configuration
 MINIO_API_PORT=${MINIO_API_PORT:-9000}
 MINIO_CONSOLE_PORT=${MINIO_CONSOLE_PORT:-9001}
-OPENMAXIO_CONSOLE_PORT=${OPENMAXIO_CONSOLE_PORT:-9090}
+MINIO_ADMIN_CONSOLE_PORT=${MINIO_ADMIN_CONSOLE_PORT:-9090}
 
 echo "Starting object storage with web console..."
 echo "API Port: ${MINIO_API_PORT}"
 echo "Console Port: ${MINIO_CONSOLE_PORT}"
-echo "Web Console Port: ${OPENMAXIO_CONSOLE_PORT}"
+echo "Admin Console Port: ${MINIO_ADMIN_CONSOLE_PORT}"
 
 # Start storage server
 minio server /data --address ":${MINIO_API_PORT}" --console-address ":${MINIO_CONSOLE_PORT}" &
@@ -35,18 +35,18 @@ if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
 fi
 
 # Start web console
-echo "Starting web console on port ${OPENMAXIO_CONSOLE_PORT}..."
+echo "Starting admin console on port ${MINIO_ADMIN_CONSOLE_PORT}..."
 export CONSOLE_MINIO_SERVER="http://localhost:${MINIO_API_PORT}"
 export CONSOLE_PBKDF_PASSPHRASE="${CONSOLE_PBKDF_PASSPHRASE:-SECRET}"
 export CONSOLE_PBKDF_SALT="${CONSOLE_PBKDF_SALT:-SECRET}"
 
-console server --port ${OPENMAXIO_CONSOLE_PORT} &
+console server --port ${MINIO_ADMIN_CONSOLE_PORT} &
 CONSOLE_PID=$!
 
 echo "✓ All services started successfully!"
 echo "  - API: http://localhost:${MINIO_API_PORT}"
 echo "  - Console: http://localhost:${MINIO_CONSOLE_PORT}"
-echo "  - Web Console: http://localhost:${OPENMAXIO_CONSOLE_PORT}"
+echo "  - Admin Console: http://localhost:${MINIO_ADMIN_CONSOLE_PORT}"
 
 # Wait for processes and handle exit
 wait -n $SERVER_PID $CONSOLE_PID
