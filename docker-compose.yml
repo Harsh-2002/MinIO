@@ -13,11 +13,10 @@ services:
       MINIO_ROOT_PASSWORD: 36bpUPfiptWp6M7uBFsM75uKbPXZgW  # Change this to your own password
       CONSOLE_PBKDF_PASSPHRASE: dBY2RpcZsDyngFKa  # Change this to your own passphrase
       CONSOLE_PBKDF_SALT: iT2cpVzb8tXPiMr6HJGxJ9otEZo5AVop  # Change this to your own salt
-      CONSOLE_MINIO_REGION: ${MINIO_REGION:-us-east-1}
+      MINIO_REGION: us-east-1  # REQUIRED: Set your AWS region
       MINIO_API_PORT: 9000
       MINIO_CONSOLE_PORT: 9001
       MINIO_ADMIN_CONSOLE_PORT: 9090
-      MINIO_REGION: us-east-1
     networks:
       - minio
     restart: unless-stopped
