@@ -22,40 +22,18 @@ MinIO's recent releases removed pre-compiled binaries and full console features.
 ### Docker Run
 ```bash
 docker run -d --name minio \
-  -p 9000:9000 -p 9001:9001 -p 9090:9090 \
+  -p 9000:9000 \
+  -p 9001:9001 \
+  -p 9002:9002 \
   -v ./data:/data \
-  -e MINIO_ROOT_USER=admin \
-  -e MINIO_ROOT_PASSWORD=your-password \
-  -e MINIO_REGION=us-east-1 \
-  -e CONSOLE_MINIO_REGION=us-east-1 \
-  -e CONSOLE_PBKDF_PASSPHRASE=your-passphrase \
-  -e CONSOLE_PBKDF_SALT=your-salt \
+  -e MINIO_ROOT_USER=UL5YXh4vjy3yEAaS4eW8 \
+  -e MINIO_ROOT_PASSWORD=36bpUPfiptWp6M7uBFsM75uKbPXZgW \
   firstfinger/minio:latest
 ```
 
 ### Docker Compose
 ```bash
-# Start with Docker Compose
 docker compose up -d
-```
-
-```yaml
-services:
-  minio:
-    image: firstfinger/minio:latest
-    ports:
-      - "9000:9000"  # MinIO API
-      - "9001:9001"  # MinIO Console
-      - "9090:9090"  # MinIO Admin Console
-    volumes:
-      - ./data:/data
-    environment:
-      MINIO_ROOT_USER: admin
-      MINIO_ROOT_PASSWORD: your-password
-      MINIO_REGION: us-east-1  # REQUIRED: Set your AWS region
-      CONSOLE_MINIO_REGION: us-east-1  # REQUIRED: Set same region as MINIO_REGION
-      CONSOLE_PBKDF_PASSPHRASE: your-passphrase
-      CONSOLE_PBKDF_SALT: your-salt
 ```
 
 ## Access Points
@@ -64,7 +42,7 @@ services:
 |---------|-----|---------|
 | **MinIO API** | http://localhost:9000 | S3-compatible API |
 | **MinIO Console** | http://localhost:9001 | Basic built-in UI |
-| **MinIO Admin Console** | http://localhost:9090 | Full-featured admin UI ⭐ |
+| **MinIO Admin Console** | http://localhost:9002 | Full-featured admin UI ⭐ |
 
 ## Essential Environment Variables
 
@@ -72,12 +50,7 @@ services:
 |----------|-------------|---------|
 | `MINIO_ROOT_USER` | Root username | `admin` |
 | `MINIO_ROOT_PASSWORD` | Root password | `SecurePass123!` |
-| `MINIO_REGION` | **REQUIRED** AWS S3 region | `us-east-1` |
-| `CONSOLE_MINIO_REGION` | **REQUIRED** Console region (same as MINIO_REGION) | `us-east-1` |
-| `CONSOLE_PBKDF_PASSPHRASE` | Console encryption passphrase | `your-secret-passphrase` |
-| `CONSOLE_PBKDF_SALT` | Console encryption salt | `your-secret-salt` |
-
-> **Important**: Both `MINIO_REGION` and `CONSOLE_MINIO_REGION` must be set to the same value to avoid authorization errors.
+| `MINIO_REGION` | AWS S3 region (defaults to us-east-1) | `us-east-1` |
 
 ## Port Configuration
 
@@ -85,7 +58,7 @@ services:
 |----------|---------|-------------|
 | `MINIO_API_PORT` | `9000` | MinIO API port |
 | `MINIO_CONSOLE_PORT` | `9001` | MinIO console port |
-| `MINIO_ADMIN_CONSOLE_PORT` | `9090` | MinIO admin console port |
+| `MINIO_ADMIN_CONSOLE_PORT` | `9002` | MinIO admin console port |
 
 ## Using MinIO Client
 
@@ -106,6 +79,7 @@ docker exec minio mc cp /path/to/file local/mybucket/
 - Set proper data directory permissions: `sudo chown -R 1000:1000 ./data`
 - Change default credentials in production
 - Use TLS certificates by mounting to `/data/.minio/certs/`
+- Console secrets are auto-generated if not provided
 
 ## Troubleshooting
 
@@ -115,15 +89,7 @@ docker exec minio mc cp /path/to/file local/mybucket/
 
 **Service not starting:** Check logs with `docker logs minio`
 
-**Docker Compose:** Use `docker compose` (not `docker-compose`)
-
-**Region errors:** Ensure both `MINIO_REGION` and `CONSOLE_MINIO_REGION` are set to the same value (e.g., `us-east-1`, `ap-south-1`)
-
-## Health Check
-
-```bash
-curl http://localhost:9000/minio/health/live
-```
+**Region errors:** Ensure `MINIO_REGION` is set (e.g., `us-east-1`, `ap-south-1`)
 
 ## License
 You just DO WHAT THE FUCK YOU WANT TO. 

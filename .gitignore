@@ -3,7 +3,8 @@ data/
 
 # Logs
 *.log
-
+.crush/
+CRUSH.md
 # Environment files
 .env
 .env.local

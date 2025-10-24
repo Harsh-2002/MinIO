@@ -4,6 +4,7 @@ data/
 # Documentation
 README.md
 *.md
+CRUSH.md
 
 # Docker files
 docker-compose.yml

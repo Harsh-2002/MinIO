@@ -4,7 +4,11 @@ set -e
 # Default port configuration
 MINIO_API_PORT=${MINIO_API_PORT:-9000}
 MINIO_CONSOLE_PORT=${MINIO_CONSOLE_PORT:-9001}
-MINIO_ADMIN_CONSOLE_PORT=${MINIO_ADMIN_CONSOLE_PORT:-9090}
+MINIO_ADMIN_CONSOLE_PORT=${MINIO_ADMIN_CONSOLE_PORT:-9002}
+
+# Default region configuration
+export MINIO_REGION=${MINIO_REGION:-us-east-1}
+export CONSOLE_MINIO_REGION=${CONSOLE_MINIO_REGION:-$MINIO_REGION}
 
 echo "Starting object storage with web console..."
 echo "API Port: ${MINIO_API_PORT}"
@@ -37,9 +41,10 @@ fi
 # Start web console
 echo "Starting admin console on port ${MINIO_ADMIN_CONSOLE_PORT}..."
 export CONSOLE_MINIO_SERVER="http://localhost:${MINIO_API_PORT}"
-export CONSOLE_PBKDF_PASSPHRASE="${CONSOLE_PBKDF_PASSPHRASE:-SECRET}"
-export CONSOLE_PBKDF_SALT="${CONSOLE_PBKDF_SALT:-SECRET}"
+export CONSOLE_PBKDF_PASSPHRASE=${CONSOLE_PBKDF_PASSPHRASE:-$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 32)}
+export CONSOLE_PBKDF_SALT=${CONSOLE_PBKDF_SALT:-$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 48)}
 
+export CONSOLE_MINIO_REGION=${CONSOLE_MINIO_REGION:-$MINIO_REGION}
 console server --port ${MINIO_ADMIN_CONSOLE_PORT} &
 CONSOLE_PID=$!
 

@@ -5,23 +5,24 @@ services:
     ports:
       - "9000:9000"
       - "9001:9001"
-      - "9090:9090"
-    volumes:
-      - ./data:/data
+      - "9002:9002"
     environment:
-      MINIO_ROOT_USER: UL5YXh4vjy3yEAaS4eW8  # Change this to your own username
-      MINIO_ROOT_PASSWORD: 36bpUPfiptWp6M7uBFsM75uKbPXZgW  # Change this to your own password
-      CONSOLE_PBKDF_PASSPHRASE: dBY2RpcZsDyngFKa  # Change this to your own passphrase
-      CONSOLE_PBKDF_SALT: iT2cpVzb8tXPiMr6HJGxJ9otEZo5AVop  # Change this to your own salt
-      MINIO_REGION: us-east-1  # REQUIRED: Set your AWS region
-      CONSOLE_MINIO_REGION: us-east-1  # REQUIRED: Set same region as MINIO_REGION
-      MINIO_API_PORT: 9000
-      MINIO_CONSOLE_PORT: 9001
-      MINIO_ADMIN_CONSOLE_PORT: 9090
-    networks:
-      - minio
+      # Authentication (Required)
+      MINIO_ROOT_USER: UL5YXh4vjy3yEAaS4eW8
+      MINIO_ROOT_PASSWORD: 36bpUPfiptWp6M7uBFsM75uKbPXZgW
+      
+      # Region Configuration (Optional, defaults to us-east-1)
+      # MINIO_REGION: us-east-1
+      
+      # Port Configuration (Optional, allows overriding defaults)
+      # Note: If you change these, you must also update the 'ports' section above.
+      # MINIO_API_PORT: 9000
+      # MINIO_CONSOLE_PORT: 9001
+      # MINIO_ADMIN_CONSOLE_PORT: 9002
+      
+      # Console Security (Optional, auto-generated if not provided)
+      # CONSOLE_PBK_DF_PASSPHRASE: your-secret-passphrase
+      # CONSOLE_PBKDF_SALT: your-secret-salt
+    volumes:
+      - ./data:/data # sudo chown -R 1000:1000 ./data
     restart: unless-stopped
-
-networks:
-  minio:
-    driver: bridge

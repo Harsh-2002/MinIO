@@ -14,6 +14,7 @@ RUN apk add --no-cache git && \
 
 # Build console binary
 FROM golang:1.24-alpine AS console-builder
+
 # Add architecture arguments
 ARG TARGETARCH
 ARG TARGETOS=linux
@@ -22,6 +23,7 @@ RUN apk add --no-cache git make && \
     git clone https://github.com/minio/object-browser.git . && \
     git checkout v1.7.6
 COPY --from=console-ui-builder /app/web-app/build ./web-app/build
+
 # Set GOOS and GOARCH for proper cross-compilation
 ENV GOOS=${TARGETOS} GOARCH=${TARGETARCH} CGO_ENABLED=0
 RUN make console
@@ -30,12 +32,14 @@ RUN make console
 FROM golang:1.24-alpine AS server-builder
 
 ARG MINIO_VERSION=latest
+
 # Add architecture arguments
 ARG TARGETARCH
 ARG TARGETOS=linux
 
 ENV GOPATH=/go
 ENV CGO_ENABLED=0
+
 # Set GOOS and GOARCH for proper cross-compilation
 ENV GOOS=${TARGETOS}
 ENV GOARCH=${TARGETARCH}
@@ -107,17 +111,15 @@ ENV MINIO_UPDATE_MINISIGN_PUBKEY="RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVW
     MC_CONFIG_DIR=/tmp/.mc
 
 # Console configuration
-ENV CONSOLE_MINIO_SERVER=http://localhost:9000 \
-    CONSOLE_PBKDF_PASSPHRASE=zlBbOOrxsxL2zN4Zdx+8AXwK7dlqwdQFqZhiAy8genE= \
-    CONSOLE_PBKDF_SALT=2ByW2Hh5UNsVX+SBTio9nzlrFDDArcZPCjdv7vWMoXttMYYIEQRntEft+12IR66C9/5YtkG2fNYayWrk1NP2Eg==
+ENV CONSOLE_MINIO_SERVER=http://localhost:9000
 
 # Configurable ports
 ENV MINIO_API_PORT=9000 \
     MINIO_CONSOLE_PORT=9001 \
-    MINIO_ADMIN_CONSOLE_PORT=9090
+    MINIO_ADMIN_CONSOLE_PORT=9002
 
 # Expose ports
-EXPOSE 9000 9001 9090
+EXPOSE 9000 9001 9002
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=20s --start-period=5s --retries=3 \
