@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MinIO + Admin Console Docker Image - Production-ready object storage with full web interface. Built from source with complete admin console.">
+    <meta name="keywords" content="MinIO, Docker, Object Storage, S3, Admin Console, Open Source">
+    <meta name="author" content="Anurag Vishwakarma">
+    <meta property="og:title" content="MinIO + Admin Console Docker Image">
+    <meta property="og:description" content="Production-ready Docker image combining MinIO server with full-featured admin console">
+    <meta property="og:type" content="website">
+    <title>MinIO + Admin Console Docker Image</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Ctext y='1em' x='0' font-size='96'%3E%E2%98%81%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --black: #000000;
+            --white: #ffffff;
+            --gray-100: #f5f5f5;
+            --gray-200: #e5e5e5;
+            --gray-300: #d4d4d4;
+            --gray-400: #a3a3a3;
+            --gray-500: #737373;
+            --gray-600: #525252;
+            --gray-700: #404040;
+            --gray-800: #262626;
+            --gray-900: #171717;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: var(--gray-100);
+            color: var(--black);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .hero {
+            padding: 2rem 0;
+            margin-bottom: 4rem;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.5rem;
+            line-height: 1;
+        }
+
+        h2 {
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            font-weight: 800;
+            margin: 4rem 0 2rem;
+            letter-spacing: -0.02em;
+        }
+
+        h2::before {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 4px;
+            background: var(--black);
+            margin-bottom: 1rem;
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 2rem 0 1rem;
+            letter-spacing: -0.01em;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0;
+            margin: 2rem 0;
+            border: 3px solid var(--black);
+        }
+
+        .stat-card {
+            border-right: 3px solid var(--black);
+            padding: 1.5rem;
+            background: var(--white);
+            transition: background 0.15s ease;
+        }
+
+        .stat-card:last-child {
+            border-right: none;
+        }
+
+        .stat-card:hover {
+            background: var(--gray-900);
+            color: var(--white);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 900;
+            display: block;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 0.5rem;
+            display: block;
+            opacity: 0.7;
+        }
+
+        .card {
+            border: 2px solid var(--black);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            background: var(--white);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            margin-bottom: 0.75rem;
+        }
+
+        .card p:last-child {
+            margin-bottom: 0;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .feature-card {
+            border: 2px solid var(--black);
+            padding: 1.5rem;
+            background: var(--white);
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+
+        .feature-card:hover {
+            background: var(--black);
+            color: var(--white);
+        }
+
+        .feature-card h3 {
+            margin-top: 0;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.875rem 1.75rem;
+            border: 2px solid var(--black);
+            background: var(--black);
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.15s ease;
+            cursor: pointer;
+            font-size: 0.95rem;
+            margin: 0.5rem 0.5rem 0.5rem 0;
+        }
+
+        .btn:hover {
+            background: var(--white);
+            color: var(--black);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: var(--white);
+            color: var(--black);
+        }
+
+        .btn-secondary:hover {
+            background: var(--black);
+            color: var(--white);
+        }
+
+        code {
+            background: var(--gray-900);
+            color: var(--white);
+            padding: 0.2rem 0.5rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background: var(--gray-900);
+            color: var(--white);
+            padding: 1.5rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border: 2px solid var(--black);
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+        }
+
+        ul, ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border: 2px solid var(--black);
+            margin: 2rem 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--white);
+        }
+
+        th, td {
+            border: 1px solid var(--gray-300);
+            padding: 1rem;
+            text-align: left;
+        }
+
+        th {
+            background: var(--black);
+            color: var(--white);
+            font-weight: 600;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+        }
+
+        tr:hover {
+            background: var(--gray-100);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.375rem 0.75rem;
+            border: 1px solid var(--black);
+            background: var(--white);
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .alert {
+            border-left: 4px solid var(--black);
+            padding: 1.5rem;
+            margin: 2rem 0;
+            background: var(--white);
+        }
+
+        .alert-warning {
+            background: var(--gray-900);
+            color: var(--white);
+            border-left-color: var(--white);
+        }
+
+        .tooltip {
+            position: relative;
+            cursor: help;
+            border-bottom: 2px dotted var(--black);
+        }
+
+        .tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--black);
+            color: var(--white);
+            padding: 0.5rem 1rem;
+            white-space: nowrap;
+            z-index: 1000;
+            border: 2px solid var(--black);
+            margin-bottom: 0.5rem;
+            opacity: 1;
+            transition: opacity 0.2s ease;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--gray-300);
+            border-top-color: var(--black);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        footer {
+            border-top: 2px solid var(--gray-300);
+            margin-top: 6rem;
+            padding: 3rem 0 2rem;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.5rem 1rem;
+            }
+
+            .hero {
+                padding: 1.5rem 0;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+                margin: 3rem 0 1.5rem;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-card {
+                border-right: none;
+                border-bottom: 2px solid var(--black);
+            }
+
+            .stat-card:last-child {
+                border-bottom: none;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .btn {
+                display: block;
+                width: 100%;
+                text-align: center;
+                margin: 0.5rem 0;
+            }
+
+            .section {
+                margin-bottom: 3rem;
+            }
+        }
+
+        .link-card {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .arch-selector {
+            display: flex;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .arch-btn {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid var(--black);
+            background: var(--white);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.15s ease;
+        }
+
+        .arch-btn:hover {
+            background: var(--gray-100);
+        }
+
+        .arch-btn.active {
+            background: var(--black);
+            color: var(--white);
+        }
+
+        .code-block {
+            position: relative;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--gray-500);
+            background: transparent;
+            color: var(--gray-400);
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: all 0.15s ease;
+        }
+
+        .copy-btn:hover {
+            background: var(--white);
+            color: var(--black);
+            border-color: var(--white);
+        }
+
+        .copy-btn.copied {
+            background: var(--white);
+            color: var(--black);
+            border-color: var(--black);
+        }
+
+        .copy-indicator {
+            position: absolute;
+            top: 0.75rem;
+            right: 6rem;
+            padding: 0.25rem 0.5rem;
+            border: 1px solid var(--black);
+            background: var(--white);
+            color: var(--black);
+            font-size: 0.75rem;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+        }
+
+        .section {
+            margin-bottom: 4rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>MinIO + Admin Console</h1>
+            <p style="font-size: 1.1rem; font-weight: 400; margin-bottom: 2rem; max-width: 600px;">Production-ready Docker image combining latest MinIO server with full-featured admin console</p>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <span class="stat-value" id="stars"><span class="loading"></span></span>
+                    <span class="stat-label">Stars</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="forks"><span class="loading"></span></span>
+                    <span class="stat-label">Forks</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="docker-pulls"><span class="loading"></span></span>
+                    <span class="stat-label">Docker Pulls</span>
+                </div>
+            </div>
+            
+            <div style="margin-top: 2rem;">
+                <a href="https://github.com/Harsh-2002/MinIO" class="btn" target="_blank">GitHub</a>
+                <a href="https://hub.docker.com/r/firstfinger/minio" class="btn btn-secondary" target="_blank">Docker Hub</a>
+            </div>
+        </div>
+
+        <section class="section">
+            <h2>Background</h2>
+            <div class="card">
+                <p>In June 2025, MinIO removed most web UI management features from the Community Edition and reserved them for paid AIStor, pushing OSS users toward CLI-only workflows. In October 2025, MinIO stopped publishing Community Edition binaries and Docker images, requiring builds from source. These moves followed MinIO’s 2021 shift to AGPLv3 and stricter license enforcement aimed at curbing commercial “free riding.”</p>
+
+                <p>This image restores a full admin UI and offers a ready-to-run container while remaining transparent about AGPL obligations.</p>
+            </div>
+            <div class="alert alert-warning">
+                <strong>License Notice:</strong> MinIO uses AGPLv3. Commercial use requires either open-sourcing your codebase or purchasing a license starting at $96,000/year.
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Features</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                <div class="card">
+                    <h3>Latest MinIO Server</h3>
+                    <p>Built from source with S3-compatible API for seamless integration.</p>
+                </div>
+                <div class="card">
+                    <h3>Full Admin Console</h3>
+                    <p>Complete web UI on port 9002 with all management features.</p>
+                </div>
+                <div class="card">
+                    <h3>MinIO Client</h3>
+                    <p>Command-line tools cryptographically verified with minisign.</p>
+                </div>
+                <div class="card">
+                    <h3>Multi-Architecture</h3>
+                    <p>Native support for AMD64 and ARM64 processors.</p>
+                </div>
+                <div class="card">
+                    <h3>Security Hardened</h3>
+                    <p>Non-root user, health checks, auto-generated secrets.</p>
+                </div>
+                <div class="card">
+                    <h3>Single Container</h3>
+                    <p>Everything bundled: API (9000), console (9001), admin UI (9002).</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Use Cases</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                <div class="card">
+                    <h3>S3-Compatible Storage</h3>
+                    <p>Use as a drop-in replacement for AWS S3 with standard APIs.</p>
+                </div>
+                <div class="card">
+                    <h3>Media Management</h3>
+                    <p>Store and deliver images, videos, and large assets efficiently.</p>
+                </div>
+                <div class="card">
+                    <h3>Backup & Archive</h3>
+                    <p>Durable, cost‑effective storage for backups and long‑term retention.</p>
+                </div>
+                <div class="card">
+                    <h3>AI & ML</h3>
+                    <p>High‑throughput storage for training data and model artifacts.</p>
+                </div>
+                <div class="card">
+                    <h3>Data Lakes</h3>
+                    <p>Build lakehouse pipelines; pair with Apache Iceberg tables.</p>
+                </div>
+                <div class="card">
+                    <h3>Self‑Hosted Cloud</h3>
+                    <p>Own your data, run privately, avoid vendor lock‑in.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Installation</h2>
+            
+            <h3>Architecture Selection</h3>
+            <div class="arch-selector">
+                <button class="arch-btn active" onclick="selectArch('amd64')">AMD64 (x86-64)</button>
+                <button class="arch-btn" onclick="selectArch('arm64')">ARM64</button>
+            </div>
+
+            <h3>Docker Run</h3>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode('docker-run')">Copy</button>
+                <pre id="docker-run"><code>docker run -d --name minio \
+  -p 9000:9000 \
+  -p 9001:9001 \
+  -p 9002:9002 \
+  -v ./data:/data \
+  -e MINIO_ROOT_USER=UL5YXh4vjy3yEAaS4eW8 \
+  -e MINIO_ROOT_PASSWORD=36bpUPfiptWp6M7uBFsM75uKbPXZgW \
+  firstfinger/minio:<span id="tag-run">latest-amd64</span></code></pre>
+            </div>
+
+            <h3>Docker Compose</h3>
+            <p>For ARM64, create a <code>.env</code> file with: <code>MINIO_IMAGE_TAG=latest-arm64</code></p>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode('docker-compose')">Copy</button>
+                <pre id="docker-compose"><code>docker compose up -d</code></pre>
+            </div>
+
+            <h3>Access Points</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>URL</th>
+                            <th>Purpose</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>MinIO API</strong></td>
+                            <td><code>http://localhost:9000</code></td>
+                            <td>S3-compatible API</td>
+                        </tr>
+                        <tr>
+                            <td><strong>MinIO Console</strong></td>
+                            <td><code>http://localhost:9001</code></td>
+                            <td>Basic built-in UI</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Admin Console</strong></td>
+                            <td><code>http://localhost:9002</code></td>
+                            <td>Full-featured admin UI</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Configuration</h2>
+            <div class="card">
+                <h3>Essential Environment Variables</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Variable</th>
+                                <th>Description</th>
+                                <th>Example</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>MINIO_ROOT_USER</code></td>
+                                <td>Root username</td>
+                                <td><code>admin</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>MINIO_ROOT_PASSWORD</code></td>
+                                <td>Root password</td>
+                                <td><code>SecurePass123!</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>MINIO_REGION</code></td>
+                                <td>AWS S3 region</td>
+                                <td><code>us-east-1</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 style="margin-top: 2rem;">Port Configuration</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Variable</th>
+                                <th>Default</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>MINIO_API_PORT</code></td>
+                                <td><code>9000</code></td>
+                                <td>MinIO API port</td>
+                            </tr>
+                            <tr>
+                                <td><code>MINIO_CONSOLE_PORT</code></td>
+                                <td><code>9001</code></td>
+                                <td>MinIO console port</td>
+                            </tr>
+                            <tr>
+                                <td><code>MINIO_ADMIN_CONSOLE_PORT</code></td>
+                                <td><code>9002</code></td>
+                                <td>Admin console port</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Using MinIO Client</h2>
+            <div class="card">
+                <p>The MinIO client (mc) is included for command-line operations:</p>
+                
+                <h3>Configure</h3>
+                <div class="code-block">
+                    <button class="copy-btn" onclick="copyCode('mc-config')">Copy</button>
+                    <pre id="mc-config"><code>docker exec minio mc alias set local http://localhost:9000 admin your-password</code></pre>
+                </div>
+
+                <h3>Create Bucket</h3>
+                <div class="code-block">
+                    <button class="copy-btn" onclick="copyCode('mc-bucket')">Copy</button>
+                    <pre id="mc-bucket"><code>docker exec minio mc mb local/mybucket</code></pre>
+                </div>
+
+                <h3>Upload File</h3>
+                <div class="code-block">
+                    <button class="copy-btn" onclick="copyCode('mc-upload')">Copy</button>
+                    <pre id="mc-upload"><code>docker exec minio mc cp /path/to/file local/mybucket/</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Security Notes</h2>
+            <div class="card">
+                <ul>
+                    <li><strong>Non-Root User:</strong> Runs as UID 1000 for security</li>
+                    <li><strong>Permissions:</strong> Set data directory ownership: <code>sudo chown -R 1000:1000 ./data</code></li>
+                    <li><strong>Credentials:</strong> Change default credentials in production</li>
+                    <li><strong>TLS Certificates:</strong> Mount to <code>/data/.minio/certs/</code> for HTTPS</li>
+                    <li><strong>Auto-Generated Secrets:</strong> Console secrets created automatically if not provided</li>
+                    <li><strong>Binary Verification:</strong> MC client verified with minisign cryptographic signatures</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Troubleshooting</h2>
+            <div class="card">
+                <h3>Permission Denied</h3>
+                <p>If you see permission errors, set proper ownership:</p>
+                <div class="code-block">
+                    <button class="copy-btn" onclick="copyCode('troubleshoot-permission')">Copy</button>
+                    <pre id="troubleshoot-permission"><code>sudo chown -R 1000:1000 ./data</code></pre>
+                </div>
+
+                <h3>Port Conflicts</h3>
+                <p>Use custom ports if defaults are taken:</p>
+                <div class="code-block">
+                    <button class="copy-btn" onclick="copyCode('troubleshoot-ports')">Copy</button>
+                    <pre id="troubleshoot-ports"><code>-e MINIO_API_PORT=8000 -e MINIO_CONSOLE_PORT=8001 -e MINIO_ADMIN_CONSOLE_PORT=8002</code></pre>
+                </div>
+
+                <h3>Service Not Starting</h3>
+                <p>Check container logs:</p>
+                <div class="code-block">
+                    <button class="copy-btn" onclick="copyCode('troubleshoot-logs')">Copy</button>
+                    <pre id="troubleshoot-logs"><code>docker logs minio</code></pre>
+                </div>
+
+                <h3>Region Errors</h3>
+                <p>Ensure region is set (defaults to us-east-1):</p>
+                <div class="code-block">
+                    <button class="copy-btn" onclick="copyCode('troubleshoot-region')">Copy</button>
+                    <pre id="troubleshoot-region"><code>-e MINIO_REGION=us-east-1</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p style="font-weight: 700; margin-bottom: 1rem;">Built for the Open Source Community</p>
+            <p style="font-size: 0.9rem; color: var(--gray-600);">
+                Maintained by <a href="https://firstfinger.io/author/anurag-vishwakarma" style="color: inherit; text-decoration: underline;">Anurag Vishwakarma</a> |
+                <a href="https://github.com/Harsh-2002/MinIO" style="color: inherit; text-decoration: underline;">GitHub</a> |
+                <a href="https://hub.docker.com/r/firstfinger/minio" style="color: inherit; text-decoration: underline;">Docker Hub</a>
+            </p>
+            <p style="font-size: 0.8rem; color: var(--gray-500); margin-top: 1rem;">
+                You just DO WHAT THE FUCK YOU WANT TO.
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // Format large numbers
+        function formatNumber(num) {
+            if (num >= 1000000000) {
+                return (num / 1000000000).toFixed(1) + 'B';
+            }
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            }
+            if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            }
+            return num.toString();
+        }
+
+        // Fetch GitHub stats
+        async function fetchGitHubStats() {
+            try {
+                const response = await fetch('https://api.github.com/repos/Harsh-2002/MinIO');
+                const data = await response.json();
+                
+                document.getElementById('stars').textContent = formatNumber(data.stargazers_count || 0);
+                document.getElementById('forks').textContent = formatNumber(data.forks_count || 0);
+            } catch (error) {
+                console.error('Error fetching GitHub stats:', error);
+                document.getElementById('stars').textContent = '—';
+                document.getElementById('forks').textContent = '—';
+            }
+        }
+
+        // Fetch Docker Hub stats
+        async function fetchDockerStats() {
+            try {
+                const response = await fetch('https://hub.docker.com/v2/repositories/firstfinger/minio');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log('Docker Hub API response:', data);
+                
+                const pullCount = data.pull_count || 0;
+                document.getElementById('docker-pulls').textContent = formatNumber(pullCount);
+            } catch (error) {
+                console.error('Error fetching Docker stats:', error);
+                // Fallback to static value from your curl result
+                document.getElementById('docker-pulls').textContent = '554';
+            }
+        }
+
+        // Architecture selection
+        function selectArch(arch) {
+            // Update buttons
+            document.querySelectorAll('.arch-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update tag in code
+            const tag = `latest-${arch}`;
+            document.getElementById('tag-run').textContent = tag;
+        }
+
+        // Copy code to clipboard with visual feedback (button-only)
+        function copyCode(elementId) {
+            const code = document.getElementById(elementId).textContent;
+            const btn = event.target;
+            navigator.clipboard.writeText(code).then(() => {
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('copied');
+                }, 1200);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        }
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Initialize
+        fetchGitHubStats();
+        fetchDockerStats();
+    </script>
+</body>
+</html>
+
