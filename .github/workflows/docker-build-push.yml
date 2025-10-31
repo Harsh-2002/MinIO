@@ -36,7 +36,6 @@ jobs:
         driver-opts: |
           image=moby/buildkit:latest
           network=host
-        buildkitd-flags: --allow-insecure-entitlement network.host
 
 
     - name: Login to DockerHub Registry

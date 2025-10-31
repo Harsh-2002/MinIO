@@ -67,9 +67,11 @@ RUN COMMIT_ID=$(git rev-parse --short HEAD) && \
 
 # Download and verify client binary in parallel for faster execution
 RUN MC_URL="https://dl.min.io/client/mc/release/linux-${TARGETARCH}" && \
-    curl -s -q "${MC_URL}/mc" -o /usr/bin/mc & \
-    curl -s -q "${MC_URL}/mc.minisig" -o /usr/bin/mc.minisig & \
-    wait && \
+    curl -sf "${MC_URL}/mc" -o /usr/bin/mc & \
+    MC_PID=$! && \
+    curl -sf "${MC_URL}/mc.minisig" -o /usr/bin/mc.minisig & \
+    SIG_PID=$! && \
+    wait $MC_PID && wait $SIG_PID && \
     chmod +x /usr/bin/mc && \
     /go/bin/minisign -Vqm /usr/bin/mc -x /usr/bin/mc.minisig -P RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav && \
     /usr/bin/mc --version
@@ -102,9 +104,8 @@ COPY --from=console-builder /app/console /usr/bin/console
 COPY --from=server-builder /workspace/CREDITS /licenses/CREDITS
 COPY --from=server-builder /workspace/LICENSE /licenses/LICENSE
 
-# Copy startup script
-COPY start.sh /usr/bin/start.sh
-RUN chmod +x /usr/bin/start.sh
+# Copy startup script with execute permissions
+COPY --chmod=755 start.sh /usr/bin/start.sh
 
 # Server configuration
 ENV MINIO_UPDATE_MINISIGN_PUBKEY="RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav" \

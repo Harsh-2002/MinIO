@@ -23,6 +23,7 @@ SERVER_PID=$!
 echo "Waiting for server to start..."
 MAX_RETRIES=30
 RETRY_COUNT=0
+FAST_POLL_ATTEMPTS=5
 
 while [ "$RETRY_COUNT" -lt "$MAX_RETRIES" ]; do
     if curl -sf "http://localhost:${MINIO_API_PORT}/minio/health/live" >/dev/null 2>&1; then
@@ -31,7 +32,7 @@ while [ "$RETRY_COUNT" -lt "$MAX_RETRIES" ]; do
     fi
     RETRY_COUNT=$((RETRY_COUNT + 1))
     # Use sleep with fractional seconds for faster initial checks
-    if [ "$RETRY_COUNT" -lt 5 ]; then
+    if [ "$RETRY_COUNT" -lt "$FAST_POLL_ATTEMPTS" ]; then
         sleep 0.5
     else
         sleep 1
