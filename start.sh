@@ -24,16 +24,21 @@ echo "Waiting for server to start..."
 MAX_RETRIES=30
 RETRY_COUNT=0
 
-while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-    if curl -sf http://localhost:${MINIO_API_PORT}/minio/health/live >/dev/null 2>&1; then
+while [ "$RETRY_COUNT" -lt "$MAX_RETRIES" ]; do
+    if curl -sf "http://localhost:${MINIO_API_PORT}/minio/health/live" >/dev/null 2>&1; then
         echo "✓ Server is ready!"
         break
     fi
     RETRY_COUNT=$((RETRY_COUNT + 1))
-    sleep 1
+    # Use sleep with fractional seconds for faster initial checks
+    if [ "$RETRY_COUNT" -lt 5 ]; then
+        sleep 0.5
+    else
+        sleep 1
+    fi
 done
 
-if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+if [ "$RETRY_COUNT" -eq "$MAX_RETRIES" ]; then
     echo "✗ Server failed to start within ${MAX_RETRIES} seconds"
     exit 1
 fi
@@ -41,11 +46,12 @@ fi
 # Start web console
 echo "Starting admin console on port ${MINIO_ADMIN_CONSOLE_PORT}..."
 export CONSOLE_MINIO_SERVER="http://localhost:${MINIO_API_PORT}"
-export CONSOLE_PBKDF_PASSPHRASE=${CONSOLE_PBKDF_PASSPHRASE:-$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 32)}
-export CONSOLE_PBKDF_SALT=${CONSOLE_PBKDF_SALT:-$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 48)}
+# Use more efficient random string generation
+export CONSOLE_PBKDF_PASSPHRASE=${CONSOLE_PBKDF_PASSPHRASE:-$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32)}
+export CONSOLE_PBKDF_SALT=${CONSOLE_PBKDF_SALT:-$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 48)}
 
 export CONSOLE_MINIO_REGION=${CONSOLE_MINIO_REGION:-$MINIO_REGION}
-console server --port ${MINIO_ADMIN_CONSOLE_PORT} &
+console server --port "${MINIO_ADMIN_CONSOLE_PORT}" &
 CONSOLE_PID=$!
 
 echo "✓ All services started successfully!"

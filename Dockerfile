@@ -6,8 +6,7 @@ FROM node:18-alpine AS console-ui-builder
 WORKDIR /app
 RUN apk add --no-cache git && \
     corepack enable && \
-    git clone https://github.com/minio/object-browser.git . && \
-    git checkout v1.7.6 && \
+    git clone --depth 1 --branch v1.7.6 https://github.com/minio/object-browser.git . && \
     cd web-app && \
     yarn install --frozen-lockfile && \
     yarn build
@@ -20,8 +19,7 @@ ARG TARGETARCH
 ARG TARGETOS=linux
 WORKDIR /app
 RUN apk add --no-cache git make && \
-    git clone https://github.com/minio/object-browser.git . && \
-    git checkout v1.7.6
+    git clone --depth 1 --branch v1.7.6 https://github.com/minio/object-browser.git .
 COPY --from=console-ui-builder /app/web-app/build ./web-app/build
 
 # Set GOOS and GOARCH for proper cross-compilation
@@ -46,17 +44,17 @@ ENV GOARCH=${TARGETARCH}
 
 WORKDIR /workspace
 
-# Install build dependencies
+# Install build dependencies and minisign
 RUN apk add --no-cache ca-certificates git make curl bash && \
     go install aead.dev/minisign/cmd/minisign@v0.2.1
 
-# Clone and build server
-RUN git clone https://github.com/minio/minio.git . && \
-    if [ "$MINIO_VERSION" != "latest" ]; then \
+# Clone and build server with shallow clone for faster download
+RUN if [ "$MINIO_VERSION" != "latest" ]; then \
         echo "Checking out version: $MINIO_VERSION" && \
-        git checkout ${MINIO_VERSION}; \
+        git clone --depth 1 --branch ${MINIO_VERSION} https://github.com/minio/minio.git . ; \
     else \
-        echo "Building from latest master"; \
+        echo "Building from latest master" && \
+        git clone --depth 1 https://github.com/minio/minio.git . ; \
     fi
 
 # Build server binary
@@ -67,9 +65,11 @@ RUN COMMIT_ID=$(git rev-parse --short HEAD) && \
     -o /usr/bin/minio . && \
     /usr/bin/minio --version
 
-# Download and verify client binary - use TARGETARCH instead of BUILDARCH
-RUN curl -s -q https://dl.min.io/client/mc/release/linux-${TARGETARCH}/mc -o /usr/bin/mc && \
-    curl -s -q https://dl.min.io/client/mc/release/linux-${TARGETARCH}/mc.minisig -o /usr/bin/mc.minisig && \
+# Download and verify client binary in parallel for faster execution
+RUN MC_URL="https://dl.min.io/client/mc/release/linux-${TARGETARCH}" && \
+    curl -s -q "${MC_URL}/mc" -o /usr/bin/mc & \
+    curl -s -q "${MC_URL}/mc.minisig" -o /usr/bin/mc.minisig & \
+    wait && \
     chmod +x /usr/bin/mc && \
     /go/bin/minisign -Vqm /usr/bin/mc -x /usr/bin/mc.minisig -P RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav && \
     /usr/bin/mc --version

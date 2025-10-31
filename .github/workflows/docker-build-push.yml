@@ -36,6 +36,7 @@ jobs:
         driver-opts: |
           image=moby/buildkit:latest
           network=host
+        buildkitd-flags: --allow-insecure-entitlement network.host
 
 
     - name: Login to DockerHub Registry
@@ -59,11 +60,13 @@ jobs:
       with:
         context: .
         platforms: ${{ matrix.platform }}
-        push: true
+        push: ${{ github.event_name != 'pull_request' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         build-args: |
           MINIO_VERSION=latest
+        cache-from: type=gha,scope=${{ matrix.arch }}
+        cache-to: type=gha,mode=max,scope=${{ matrix.arch }}
         outputs: type=registry
         provenance: false
         sbom: false
