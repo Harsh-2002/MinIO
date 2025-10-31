@@ -825,7 +825,7 @@
         // Fetch Docker Hub stats
         async function fetchDockerStats() {
             try {
-                const response = await fetch('https://firstfinger-docker-stats-minio.av7312002.workers.dev/');
+                const response = await fetch('https://firstfinger-docker-stats-minio.av7312002.workers.dev');
                 if (!response.ok) {
                     const errorText = await response.text();
                     console.error('HTTP error! status:', response.status, 'body:', errorText);
