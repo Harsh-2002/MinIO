@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="MinIO + Admin Console Docker Image - Production-ready object storage with full web interface. Built from source with complete admin console.">
+    <meta name="description"
+        content="MinIO + Admin Console Docker Image - Production-ready object storage with full web interface. Built from source with complete admin console.">
     <meta name="keywords" content="MinIO, Docker, Object Storage, S3, Admin Console, Open Source">
     <meta name="author" content="Anurag Vishwakarma">
     <meta property="og:title" content="MinIO + Admin Console Docker Image">
-    <meta property="og:description" content="Production-ready Docker image combining MinIO server with full-featured admin console">
+    <meta property="og:description"
+        content="Production-ready Docker image combining MinIO server with full-featured admin console">
     <meta property="og:type" content="website">
     <title>MinIO + Admin Console Docker Image</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Ctext y='1em' x='0' font-size='96'%3E%E2%98%81%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Ctext y='1em' x='0' font-size='96'%3E%E2%98%81%EF%B8%8F%3C/text%3E%3C/svg%3E" />
     <style>
         * {
             margin: 0;
@@ -221,7 +225,8 @@
             padding: 0;
         }
 
-        ul, ol {
+        ul,
+        ol {
             margin-left: 2rem;
             margin-bottom: 1rem;
         }
@@ -242,7 +247,8 @@
             background: var(--white);
         }
 
-        th, td {
+        th,
+        td {
             border: 1px solid var(--gray-300);
             padding: 1rem;
             text-align: left;
@@ -319,7 +325,9 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         footer {
@@ -457,12 +465,14 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="hero">
             <h1>MinIO + Admin Console</h1>
-            <p style="font-size: 1.1rem; font-weight: 400; margin-bottom: 2rem; max-width: 600px;">Production-ready Docker image combining latest MinIO server with full-featured admin console</p>
-            
+            <p style="font-size: 1.1rem; font-weight: 400; margin-bottom: 2rem; max-width: 600px;">Production-ready
+                Docker image combining latest MinIO server with full-featured admin console</p>
+
             <div class="stats">
                 <div class="stat-card">
                     <span class="stat-value" id="stars"><span class="loading"></span></span>
@@ -477,22 +487,29 @@
                     <span class="stat-label">Docker Pulls</span>
                 </div>
             </div>
-            
+
             <div style="margin-top: 2rem;">
                 <a href="https://github.com/Harsh-2002/MinIO" class="btn" target="_blank">GitHub</a>
-                <a href="https://hub.docker.com/r/firstfinger/minio" class="btn btn-secondary" target="_blank">Docker Hub</a>
+                <a href="https://hub.docker.com/r/firstfinger/minio" class="btn btn-secondary" target="_blank">Docker
+                    Hub</a>
             </div>
         </div>
 
         <section class="section">
             <h2>Background</h2>
             <div class="card">
-                <p>In June 2025, MinIO removed most web UI management features from the Community Edition and reserved them for paid AIStor, pushing OSS users toward CLI-only workflows. In October 2025, MinIO stopped publishing Community Edition binaries and Docker images, requiring builds from source. These moves followed MinIO’s 2021 shift to AGPLv3 and stricter license enforcement aimed at curbing commercial “free riding.”</p>
+                <p>In June 2025, MinIO removed most web UI management features from the Community Edition and reserved
+                    them for paid AIStor, pushing OSS users toward CLI-only workflows. In October 2025, MinIO stopped
+                    publishing Community Edition binaries and Docker images, requiring builds from source. These moves
+                    followed MinIO’s 2021 shift to AGPLv3 and stricter license enforcement aimed at curbing commercial
+                    “free riding.”</p>
 
-                <p>This image restores a full admin UI and offers a ready-to-run container while remaining transparent about AGPL obligations.</p>
+                <p>This image restores a full admin UI and offers a ready-to-run container while remaining transparent
+                    about AGPL obligations.</p>
             </div>
             <div class="alert alert-warning">
-                <strong>License Notice:</strong> MinIO uses AGPLv3. Commercial use requires either open-sourcing your codebase or purchasing a license starting at $96,000/year.
+                <strong>License Notice:</strong> MinIO uses AGPLv3. Commercial use requires either open-sourcing your
+                codebase or purchasing a license starting at $96,000/year.
             </div>
         </section>
 
@@ -558,7 +575,7 @@
 
         <section class="section">
             <h2>Installation</h2>
-            
+
             <h3>Architecture Selection</h3>
             <div class="arch-selector">
                 <button class="arch-btn active" onclick="selectArch('amd64')">AMD64 (x86-64)</button>
@@ -685,11 +702,12 @@
             <h2>Using MinIO Client</h2>
             <div class="card">
                 <p>The MinIO client (mc) is included for command-line operations:</p>
-                
+
                 <h3>Configure</h3>
                 <div class="code-block">
                     <button class="copy-btn" onclick="copyCode('mc-config')">Copy</button>
-                    <pre id="mc-config"><code>docker exec minio mc alias set local http://localhost:9000 admin your-password</code></pre>
+                    <pre
+                        id="mc-config"><code>docker exec minio mc alias set local http://localhost:9000 admin your-password</code></pre>
                 </div>
 
                 <h3>Create Bucket</h3>
@@ -711,11 +729,15 @@
             <div class="card">
                 <ul>
                     <li><strong>Non-Root User:</strong> Runs as UID 1000 for security</li>
-                    <li><strong>Permissions:</strong> Set data directory ownership: <code>sudo chown -R 1000:1000 ./data</code></li>
+                    <li><strong>Permissions:</strong> Set data directory ownership:
+                        <code>sudo chown -R 1000:1000 ./data</code>
+                    </li>
                     <li><strong>Credentials:</strong> Change default credentials in production</li>
                     <li><strong>TLS Certificates:</strong> Mount to <code>/data/.minio/certs/</code> for HTTPS</li>
-                    <li><strong>Auto-Generated Secrets:</strong> Console secrets created automatically if not provided</li>
-                    <li><strong>Binary Verification:</strong> MC client verified with minisign cryptographic signatures</li>
+                    <li><strong>Auto-Generated Secrets:</strong> Console secrets created automatically if not provided
+                    </li>
+                    <li><strong>Binary Verification:</strong> MC client verified with minisign cryptographic signatures
+                    </li>
                 </ul>
             </div>
         </section>
@@ -734,7 +756,8 @@
                 <p>Use custom ports if defaults are taken:</p>
                 <div class="code-block">
                     <button class="copy-btn" onclick="copyCode('troubleshoot-ports')">Copy</button>
-                    <pre id="troubleshoot-ports"><code>-e MINIO_API_PORT=8000 -e MINIO_CONSOLE_PORT=8001 -e MINIO_ADMIN_CONSOLE_PORT=8002</code></pre>
+                    <pre
+                        id="troubleshoot-ports"><code>-e MINIO_API_PORT=8000 -e MINIO_CONSOLE_PORT=8001 -e MINIO_ADMIN_CONSOLE_PORT=8002</code></pre>
                 </div>
 
                 <h3>Service Not Starting</h3>
@@ -756,9 +779,12 @@
         <footer>
             <p style="font-weight: 700; margin-bottom: 1rem;">Built for the Open Source Community</p>
             <p style="font-size: 0.9rem; color: var(--gray-600);">
-                Maintained by <a href="https://firstfinger.io/author/anurag-vishwakarma" style="color: inherit; text-decoration: underline;">Anurag Vishwakarma</a> |
-                <a href="https://github.com/Harsh-2002/MinIO" style="color: inherit; text-decoration: underline;">GitHub</a> |
-                <a href="https://hub.docker.com/r/firstfinger/minio" style="color: inherit; text-decoration: underline;">Docker Hub</a>
+                Maintained by <a href="https://firstfinger.io/author/anurag-vishwakarma"
+                    style="color: inherit; text-decoration: underline;">Anurag Vishwakarma</a> |
+                <a href="https://github.com/Harsh-2002/MinIO"
+                    style="color: inherit; text-decoration: underline;">GitHub</a> |
+                <a href="https://hub.docker.com/r/firstfinger/minio"
+                    style="color: inherit; text-decoration: underline;">Docker Hub</a>
             </p>
             <p style="font-size: 0.8rem; color: var(--gray-500); margin-top: 1rem;">
                 You just DO WHAT THE FUCK YOU WANT TO.
@@ -786,7 +812,7 @@
             try {
                 const response = await fetch('https://api.github.com/repos/Harsh-2002/MinIO');
                 const data = await response.json();
-                
+
                 document.getElementById('stars').textContent = formatNumber(data.stargazers_count || 0);
                 document.getElementById('forks').textContent = formatNumber(data.forks_count || 0);
             } catch (error) {
@@ -799,19 +825,19 @@
         // Fetch Docker Hub stats
         async function fetchDockerStats() {
             try {
-                const response = await fetch('https://hub.docker.com/v2/repositories/firstfinger/minio');
+                const response = await fetch('https://firstfinger-docker-stats-minio.av7312002.workers.dev/');
                 if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('HTTP error! status:', response.status, 'body:', errorText);
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                console.log('Docker Hub API response:', data);
-                
+                console.log('Cloudflare Worker API response:', data);
                 const pullCount = data.pull_count || 0;
                 document.getElementById('docker-pulls').textContent = formatNumber(pullCount);
             } catch (error) {
                 console.error('Error fetching Docker stats:', error);
-                // Fallback to static value from your curl result
-                document.getElementById('docker-pulls').textContent = '554';
+                document.getElementById('docker-pulls').textContent = '—';
             }
         }
 
@@ -864,5 +890,5 @@
         fetchDockerStats();
     </script>
 </body>
-</html>
 
+</html>
