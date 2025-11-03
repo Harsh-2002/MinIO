@@ -463,6 +463,88 @@
         .section {
             margin-bottom: 4rem;
         }
+
+        .commit-timeline {
+            position: relative;
+        }
+
+        .commit-timeline::before {
+            content: '';
+            position: absolute;
+            left: 3px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--gray-300);
+        }
+
+        .commit-item {
+            position: relative;
+            margin-bottom: 2rem;
+            padding-left: 3.5rem;
+        }
+
+        .commit-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .commit-dot {
+            position: absolute;
+            left: 0;
+            top: 0.35rem;
+            width: 8px;
+            height: 8px;
+            background: var(--black);
+            border: none;
+            z-index: 1;
+        }
+
+        .load-more-commits {
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .load-more-commits .btn {
+            margin: 0;
+        }
+
+        .load-more-commits .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .commit-sha {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: var(--gray-600);
+            margin-bottom: 0.5rem;
+        }
+
+        .commit-sha a {
+            color: var(--gray-600);
+            text-decoration: none;
+            transition: color 0.15s ease;
+        }
+
+        .commit-sha a:hover {
+            color: var(--black);
+            text-decoration: underline;
+        }
+
+        .commit-message {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+
+        .commit-meta {
+            font-size: 0.85rem;
+            color: var(--gray-600);
+        }
+
+        .commit-meta strong {
+            color: var(--black);
+        }
     </style>
 </head>
 
@@ -510,6 +592,20 @@
             <div class="alert alert-warning">
                 <strong>License Notice:</strong> MinIO uses AGPLv3. Commercial use requires either open-sourcing your
                 codebase or purchasing a license starting at $96,000/year.
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Recent Commits</h2>
+            <div class="card">
+                <div id="commits-container">
+                    <div style="text-align: center; padding: 2rem;">
+                        <span class="loading"></span>
+                    </div>
+                </div>
+                <div id="load-more-container" class="load-more-commits" style="display: none;">
+                    <button class="btn btn-secondary" onclick="loadMoreCommits()">See Older Commits</button>
+                </div>
             </div>
         </section>
 
@@ -825,7 +921,7 @@
         // Fetch Docker Hub stats
         async function fetchDockerStats() {
             try {
-                const response = await fetch('https://firstfinger-docker-stats-minio.av7312002.workers.dev');
+                const response = await fetch('https://firstfinger-docker-stats-minio.av7312002.workers.dev/');
                 if (!response.ok) {
                     const errorText = await response.text();
                     console.error('HTTP error! status:', response.status, 'body:', errorText);
@@ -839,6 +935,112 @@
                 console.error('Error fetching Docker stats:', error);
                 document.getElementById('docker-pulls').textContent = '—';
             }
+        }
+
+        // Pagination state for commits
+        let commitPage = 1;
+        let isLoadingCommits = false;
+        let hasMoreCommits = true;
+
+        // Fetch GitHub commits
+        async function fetchGitHubCommits(page = 1, append = false) {
+            if (isLoadingCommits) return;
+
+            isLoadingCommits = true;
+            const loadMoreBtn = document.querySelector('#load-more-container .btn');
+            if (loadMoreBtn) {
+                loadMoreBtn.disabled = true;
+                loadMoreBtn.textContent = 'Loading...';
+            }
+
+            try {
+                const response = await fetch(`https://api.github.com/repos/Harsh-2002/MinIO/commits?per_page=5&page=${page}`);
+                const commits = await response.json();
+
+                const container = document.getElementById('commits-container');
+
+                if (!commits || commits.length === 0) {
+                    if (!append) {
+                        container.innerHTML = '<p style="text-align: center; color: var(--gray-600);">No commits found</p>';
+                    }
+                    hasMoreCommits = false;
+                    document.getElementById('load-more-container').style.display = 'none';
+                    return;
+                }
+
+                // Check if we have more commits
+                if (commits.length < 5) {
+                    hasMoreCommits = false;
+                }
+
+                let timeline;
+                if (append) {
+                    timeline = container.querySelector('.commit-timeline');
+                } else {
+                    timeline = document.createElement('div');
+                    timeline.className = 'commit-timeline';
+                }
+
+                commits.forEach(commit => {
+                    const sha = commit.sha.substring(0, 7);
+                    const message = commit.commit.message.split('\n')[0]; // First line only
+                    const author = commit.commit.author.name;
+                    const date = new Date(commit.commit.author.date);
+                    const formattedDate = date.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+
+                    const commitItem = document.createElement('div');
+                    commitItem.className = 'commit-item';
+                    commitItem.innerHTML = `
+                        <div class="commit-dot"></div>
+                        <div class="commit-sha">
+                            <a href="${commit.html_url}" target="_blank" rel="noopener noreferrer">${sha}</a>
+                        </div>
+                        <div class="commit-message">${message}</div>
+                        <div class="commit-meta">
+                            <strong>${author}</strong> committed on ${formattedDate}
+                        </div>
+                    `;
+                    timeline.appendChild(commitItem);
+                });
+
+                if (!append) {
+                    container.innerHTML = '';
+                    container.appendChild(timeline);
+                }
+
+                // Show or hide load more button
+                const loadMoreContainer = document.getElementById('load-more-container');
+                if (hasMoreCommits) {
+                    loadMoreContainer.style.display = 'block';
+                } else {
+                    loadMoreContainer.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error fetching commits:', error);
+                if (!append) {
+                    document.getElementById('commits-container').innerHTML =
+                        '<p style="text-align: center; color: var(--gray-600);">Unable to load commits</p>';
+                }
+            } finally {
+                isLoadingCommits = false;
+                if (loadMoreBtn) {
+                    loadMoreBtn.disabled = false;
+                    loadMoreBtn.textContent = 'See Older Commits';
+                }
+            }
+        }
+
+        // Load more commits
+        function loadMoreCommits() {
+            if (!hasMoreCommits || isLoadingCommits) return;
+            commitPage++;
+            fetchGitHubCommits(commitPage, true);
         }
 
         // Architecture selection
@@ -888,6 +1090,7 @@
         // Initialize
         fetchGitHubStats();
         fetchDockerStats();
+        fetchGitHubCommits();
     </script>
 </body>
 
