@@ -549,6 +549,9 @@
 </head>
 
 <body>
+    <div id="announcement-bar"
+        style="display:none; background:var(--black); color:var(--white); padding:1rem; text-align:center; font-weight:700; position:sticky; top:0; z-index:1000;">
+    </div>
     <div class="container">
         <div class="hero">
             <h1>MinIO + Admin Console</h1>
@@ -945,16 +948,19 @@
         // Fetch GitHub commits
         async function fetchGitHubCommits(page = 1, append = false) {
             if (isLoadingCommits) return;
-
             isLoadingCommits = true;
             const loadMoreBtn = document.querySelector('#load-more-container .btn');
             if (loadMoreBtn) {
                 loadMoreBtn.disabled = true;
                 loadMoreBtn.textContent = 'Loading...';
             }
-
             try {
                 const response = await fetch(`https://api.github.com/repos/Harsh-2002/MinIO/commits?per_page=5&page=${page}`);
+                if (response.status === 403) {
+                    // Rate limit exceeded
+                    showAnnouncementBar('GitHub API rate limit exceeded. You have tried multiple times and must wait up to 1 hour before trying again.');
+                    return;
+                }
                 const commits = await response.json();
 
                 const container = document.getElementById('commits-container');
@@ -1034,6 +1040,12 @@
                     loadMoreBtn.textContent = 'See Older Commits';
                 }
             }
+        }
+
+        function showAnnouncementBar(message) {
+            var bar = document.getElementById('announcement-bar');
+            bar.textContent = message;
+            bar.style.display = 'block';
         }
 
         // Load more commits
