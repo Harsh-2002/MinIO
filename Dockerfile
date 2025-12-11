@@ -121,9 +121,13 @@ ENV MINIO_API_PORT=9000 \
 # Expose ports
 EXPOSE 9000 9001 9002
 
-# Health check
+# Health check (respects TLS certificates if present)
 HEALTHCHECK --interval=30s --timeout=20s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:${MINIO_API_PORT}/minio/health/live || exit 1
+    CMD sh -c 'CERT_DIR="${MINIO_CERTS_DIR:-/data/.minio/certs}"; SCHEME="http"; FLAGS="-sf"; \
+    if [ -f "${CERT_DIR}/public.crt" ] && [ -f "${CERT_DIR}/private.key" ]; then \
+      SCHEME="https"; FLAGS="-sfk"; \
+    fi; \
+    curl ${FLAGS} ${SCHEME}://localhost:${MINIO_API_PORT}/minio/health/live || exit 1'
 
 # Run as non-root user
 USER minio

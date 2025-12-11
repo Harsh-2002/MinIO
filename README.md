@@ -81,6 +81,7 @@ docker compose up -d
 | `MINIO_ROOT_USER` | Root username | `admin` |
 | `MINIO_ROOT_PASSWORD` | Root password | `SecurePass123!` |
 | `MINIO_REGION` | AWS S3 region (defaults to us-east-1) | `us-east-1` |
+| `MINIO_CERTS_DIR` | (Optional) TLS cert directory inside container | `/data/.minio/certs` |
 
 ## Port Configuration
 
@@ -110,6 +111,34 @@ docker exec minio mc cp /path/to/file local/mybucket/
 - Change default credentials in production
 - Use TLS certificates by mounting to `/data/.minio/certs/`
 - Console secrets are auto-generated if not provided
+
+## Enabling TLS
+
+1. **Create the cert directory on the data volume**
+   ```bash
+   mkdir -p ./data/.minio/certs
+   sudo chown -R 1000:1000 ./data/.minio
+   ```
+2. **Place your TLS materials inside that folder**
+   - `public.crt` – full certificate chain (leaf + intermediates). *The filename must stay `public.crt`; MinIO only auto-loads certs with that name.*
+   - `private.key` – private key for the certificate. *Likewise, keep the filename `private.key`.*
+   - Optional CA chain files go under `./data/.minio/certs/CAs/`
+3. **Start the container with the data volume mounted** (already required for persistence):
+   ```bash
+   docker run -d --name minio \
+     -v $(pwd)/data:/data \
+     -p 9000:9000 -p 9001:9001 -p 9002:9002 \
+     -e MINIO_ROOT_USER=admin \
+     -e MINIO_ROOT_PASSWORD=SecurePass123! \
+     firstfinger/minio:latest-amd64
+   ```
+4. The entrypoint automatically detects `public.crt` + `private.key`, points MinIO at `/data/.minio/certs`, and switches the readiness probe to HTTPS. No extra flags are required. Override the location with `MINIO_CERTS_DIR` if you need a different mount point.
+5. (Optional) Validate the HTTPS endpoint:
+   ```bash
+   curl -k https://localhost:9000/minio/health/live
+   ```
+   > Note: the admin console on port 9002 remains HTTP; terminate it behind your ingress/proxy if you require TLS end-to-end.
+6. **(Self-signed certificates)** Make sure the SAN (Subject Alternative Name) entries cover every hostname/IP you will visit (e.g., `localhost`, `10.1.1.20`). Install the issuing certificate (or CA) in your OS trust store to avoid browser warnings.
 
 ## Troubleshooting
 
