@@ -11,24 +11,28 @@ on:
 
 jobs:
   build-and-push:
-    runs-on: ${{ matrix.runner }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         platform: [linux/amd64, linux/arm64]
         include:
           - platform: linux/amd64
             arch: amd64
-            runner: ubuntu-latest
           - platform: linux/arm64  
             arch: arm64
-            runner: ubuntu-latest
     permissions:
       contents: read
       packages: write
+    timeout-minutes: 120  # Increase timeout to handle long builds
 
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@v5
+      uses: actions/checkout@v4
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+      with:
+        platforms: arm64
 
     - name: Set Up Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -36,7 +40,16 @@ jobs:
         driver-opts: |
           image=moby/buildkit:latest
           network=host
+        buildkitd-flags: --allow-insecure-entitlement security.insecure
 
+    - name: Free Disk Space (Ubuntu)
+      run: |
+        df -h
+        sudo apt-get clean
+        sudo rm -rf /usr/local/share/dotnet
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /opt/ghc
+        df -h
 
     - name: Login to DockerHub Registry
       if: github.event_name != 'pull_request'
@@ -59,7 +72,7 @@ jobs:
       with:
         context: .
         platforms: ${{ matrix.platform }}
-        push: true
+        push: ${{ github.event_name != 'pull_request' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         build-args: |
@@ -69,6 +82,7 @@ jobs:
         sbom: false
 
     - name: Generate summary
+      if: github.event_name != 'pull_request'
       run: |
         echo "## 🎉 Build Summary - ${{ matrix.arch }}" >> $GITHUB_STEP_SUMMARY
         echo "- **Image**: ${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
@@ -77,3 +91,11 @@ jobs:
         echo "- **MinIO Version**: Latest (built from source)" >> $GITHUB_STEP_SUMMARY
         echo "- **MinIO Admin Console Version**: v1.7.6 (stable working version)" >> $GITHUB_STEP_SUMMARY
         echo "- **Status**: ✅ Successfully built and pushed" >> $GITHUB_STEP_SUMMARY
+    
+    - name: Report Build Failure
+      if: failure()
+      run: |
+        echo "## ❌ Build Failed - ${{ matrix.arch }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Platform**: ${{ matrix.platform }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Error**: Build was cancelled or timed out" >> $GITHUB_STEP_SUMMARY
+        echo "- **Recommendation**: Check runner resources and try again" >> $GITHUB_STEP_SUMMARY
