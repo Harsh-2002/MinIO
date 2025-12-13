@@ -10,16 +10,85 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-push:
+  build-and-push-amd64:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        platform: [linux/amd64, linux/arm64]
-        include:
-          - platform: linux/amd64
-            arch: amd64
-          - platform: linux/arm64  
-            arch: arm64
+    permissions:
+      contents: read
+      packages: write
+    timeout-minutes: 120  # Increase timeout to handle long builds
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set Up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      with:
+        driver-opts: |
+          image=moby/buildkit:latest
+          network=host
+        buildkitd-flags: --allow-insecure-entitlement security.insecure
+
+    - name: Free Disk Space (Ubuntu)
+      run: |
+        df -h
+        sudo apt-get clean
+        sudo rm -rf /usr/local/share/dotnet
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /opt/ghc
+        df -h
+
+    - name: Login to DockerHub Registry
+      if: github.event_name != 'pull_request'
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Extract metadata for Docker
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: firstfinger/minio
+        tags: |
+          type=raw,value=latest-amd64
+
+    - name: Build and Push Docker Image
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        platforms: linux/amd64
+        push: ${{ github.event_name != 'pull_request' }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        build-args: |
+          MINIO_VERSION=latest
+        outputs: type=registry
+        provenance: false
+        sbom: false
+
+    - name: Generate summary
+      if: github.event_name != 'pull_request'
+      run: |
+        echo "## 🎉 Build Summary - amd64" >> $GITHUB_STEP_SUMMARY
+        echo "- **Image**: ${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Platform**: linux/amd64" >> $GITHUB_STEP_SUMMARY
+        echo "- **Architecture**: amd64" >> $GITHUB_STEP_SUMMARY
+        echo "- **MinIO Version**: Latest (built from source)" >> $GITHUB_STEP_SUMMARY
+        echo "- **MinIO Admin Console Version**: v1.7.6 (stable working version)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Status**: ✅ Successfully built and pushed" >> $GITHUB_STEP_SUMMARY
+    
+    - name: Report Build Failure
+      if: failure()
+      run: |
+        echo "## ❌ Build Failed - amd64" >> $GITHUB_STEP_SUMMARY
+        echo "- **Platform**: linux/amd64" >> $GITHUB_STEP_SUMMARY
+        echo "- **Error**: Build was cancelled or timed out" >> $GITHUB_STEP_SUMMARY
+        echo "- **Recommendation**: Check runner resources and try again" >> $GITHUB_STEP_SUMMARY
+
+  build-and-push-arm64:
+    runs-on: ubuntu-latest
+    needs: build-and-push-amd64  # Wait for amd64 build to complete
     permissions:
       contents: read
       packages: write
@@ -64,14 +133,13 @@ jobs:
       with:
         images: firstfinger/minio
         tags: |
-          type=raw,value=latest-arm64,enable=${{ matrix.platform == 'linux/arm64' }}
-          type=raw,value=latest-amd64,enable=${{ matrix.platform == 'linux/amd64' }}
+          type=raw,value=latest-arm64
 
     - name: Build and Push Docker Image
       uses: docker/build-push-action@v6
       with:
         context: .
-        platforms: ${{ matrix.platform }}
+        platforms: linux/arm64
         push: ${{ github.event_name != 'pull_request' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
@@ -84,10 +152,10 @@ jobs:
     - name: Generate summary
       if: github.event_name != 'pull_request'
       run: |
-        echo "## 🎉 Build Summary - ${{ matrix.arch }}" >> $GITHUB_STEP_SUMMARY
+        echo "## 🎉 Build Summary - arm64" >> $GITHUB_STEP_SUMMARY
         echo "- **Image**: ${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
-        echo "- **Platform**: ${{ matrix.platform }}" >> $GITHUB_STEP_SUMMARY
-        echo "- **Architecture**: ${{ matrix.arch }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Platform**: linux/arm64" >> $GITHUB_STEP_SUMMARY
+        echo "- **Architecture**: arm64" >> $GITHUB_STEP_SUMMARY
         echo "- **MinIO Version**: Latest (built from source)" >> $GITHUB_STEP_SUMMARY
         echo "- **MinIO Admin Console Version**: v1.7.6 (stable working version)" >> $GITHUB_STEP_SUMMARY
         echo "- **Status**: ✅ Successfully built and pushed" >> $GITHUB_STEP_SUMMARY
@@ -95,7 +163,7 @@ jobs:
     - name: Report Build Failure
       if: failure()
       run: |
-        echo "## ❌ Build Failed - ${{ matrix.arch }}" >> $GITHUB_STEP_SUMMARY
-        echo "- **Platform**: ${{ matrix.platform }}" >> $GITHUB_STEP_SUMMARY
+        echo "## ❌ Build Failed - arm64" >> $GITHUB_STEP_SUMMARY
+        echo "- **Platform**: linux/arm64" >> $GITHUB_STEP_SUMMARY
         echo "- **Error**: Build was cancelled or timed out" >> $GITHUB_STEP_SUMMARY
         echo "- **Recommendation**: Check runner resources and try again" >> $GITHUB_STEP_SUMMARY
