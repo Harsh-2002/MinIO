@@ -1,18 +1,19 @@
 # Multi-stage build for object storage with web console
 ARG MINIO_VERSION=latest
+ARG CONSOLE_VERSION=v1.7.6
+ARG MDS_COMMIT=027fb7f9834e2bd6daba7f62a9d04d9a3606fbe1
 
 # Build web console UI
 FROM node:18-alpine AS console-ui-builder
+ARG CONSOLE_VERSION
+ARG MDS_COMMIT
 WORKDIR /app
 ENV GIT_TERMINAL_PROMPT=0
 RUN apk add --no-cache git jq && \
-    git clone https://github.com/OpenMaxIO/openmaxio-object-browser.git . && \
-    git checkout openMaxIO-main && \
-    MDS_REF=$(jq -r '.dependencies.mds' web-app/package.json) && \
-    MDS_URL=$(echo "$MDS_REF" | cut -d'#' -f1) && \
-    MDS_COMMIT=$(echo "$MDS_REF" | cut -d'#' -f2) && \
-    git clone "$MDS_URL" /tmp/mds && \
-    cd /tmp/mds && git checkout "$MDS_COMMIT" && \
+    git clone https://github.com/Harsh-2002/MinIO-Object-Browser.git . && \
+    git checkout ${CONSOLE_VERSION} && \
+    git clone https://github.com/Harsh-2002/mds.git /tmp/mds && \
+    cd /tmp/mds && git checkout ${MDS_COMMIT} && \
     cd /app/web-app && \
     jq '.dependencies.mds = "file:///tmp/mds"' package.json > /tmp/pkg.json && \
     mv /tmp/pkg.json package.json && \
@@ -24,12 +25,13 @@ RUN apk add --no-cache git jq && \
 FROM golang:1.24-alpine AS console-builder
 
 # Add architecture arguments
+ARG CONSOLE_VERSION
 ARG TARGETARCH
 ARG TARGETOS=linux
 WORKDIR /app
 RUN apk add --no-cache git make && \
-    git clone https://github.com/OpenMaxIO/openmaxio-object-browser.git . && \
-    git checkout openMaxIO-main
+    git clone https://github.com/Harsh-2002/MinIO-Object-Browser.git . && \
+    git checkout ${CONSOLE_VERSION}
 COPY --from=console-ui-builder /app/web-app/build ./web-app/build
 
 # Set GOOS and GOARCH for proper cross-compilation

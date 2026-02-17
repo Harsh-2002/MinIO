@@ -1,4 +1,4 @@
-name: Build and Push
+name: Build Latest
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ main ]
   schedule:
-    - cron: '30 6 * * *'
+    - cron: '30 6 * * 1'  # Every Monday at 06:30 UTC
   workflow_dispatch:
 
 jobs:
@@ -50,5 +50,7 @@ jobs:
         tags: firstfinger/minio:latest
         build-args: |
           MINIO_VERSION=latest
+          CONSOLE_VERSION=v1.7.6
+          MDS_COMMIT=027fb7f9834e2bd6daba7f62a9d04d9a3606fbe1
         provenance: false
         sbom: false

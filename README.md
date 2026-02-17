@@ -2,153 +2,131 @@
 
 [![Docker Hub](https://img.shields.io/badge/Docker%20Hub-firstfinger%2Fminio-blue)](https://hub.docker.com/r/firstfinger/minio)
 
-A production-ready Docker image that combines the latest MinIO server with the full-featured MinIO Admin Console. Everything you need for object storage with a complete web interface.
+A production-ready Docker image that combines the latest MinIO server with the full-featured MinIO Admin Console — including **Site Replication** support. Everything you need for object storage with a complete web interface, built from source.
 
 ## What's Included
 
-- **Latest MinIO Server** - Built from source
-- **MinIO Admin Console** - Full-featured web UI for management
-- **MinIO Client (mc)** - Command-line tools
+- **MinIO Server** — Built from source (latest)
+- **MinIO Admin Console** — Full-featured web UI including Site Replication
+- **MinIO Client (mc)** — Command-line tools, minisign-verified
 
-## Why This Image?
+## Image Tags
 
-MinIO's recent releases removed pre-compiled binaries and full console features. This image provides:
+| Tag | Console Version | When Updated |
+|-----|----------------|--------------|
+| `latest` | v1.7.6 | Daily + every push to main |
+| `1.7.3` | v1.7.3 (Site Replication) | Manual release only |
 
-- **Complete MinIO Server** - Built from source with latest features
-- **Full Admin Console** - Complete web interface for management
-- **Single Image** - No need for separate console containers
-- **Production Ready** - Optimized for deployment
+Both tags are multi-arch OCI manifests — Docker automatically selects the right binary for your platform (`linux/amd64` or `linux/arm64`). No need to specify an architecture tag.
 
 ## Quick Start
 
 ### Docker Run
+
 ```bash
 docker run -d --name minio \
   -p 9000:9000 \
   -p 9001:9001 \
   -p 9002:9002 \
   -v ./data:/data \
-  -e MINIO_ROOT_USER=UL5YXh4vjy3yEAaS4eW8 \
-  -e MINIO_ROOT_PASSWORD=36bpUPfiptWp6M7uBFsM75uKbPXZgW \
-  firstfinger/minio:latest-amd64
-```
-
-## Image Tags
-
-This image is built for multiple architectures. You must select the tag that matches your system's architecture:
-
-- **`latest-amd64`**: The image for `x86-64` (amd64) architectures.
-- **`latest-arm64`**: The image for `arm64` architectures.
-
-For example, to run on an `x86-64` machine:
-```bash
-docker run -d --name minio \
-  -p 9000:9000 \
-  -p 9001:9001 \
-  -p 9002:9002 \
-  -v ./data:/data \
-  -e MINIO_ROOT_USER=UL5YXh4vjy3yEAaS4eW8 \
-  -e MINIO_ROOT_PASSWORD=36bpUPfiptWp6M7uBFsM75uKbPXZgW \
-  firstfinger/minio:latest-amd64
+  -e MINIO_ROOT_USER=your-access-key \
+  -e MINIO_ROOT_PASSWORD=your-secret-key \
+  firstfinger/minio:latest
 ```
 
 ### Docker Compose
 
-By default, the `docker-compose.yml` file uses the `latest-amd64` tag. To use the `arm64` image, create a `.env` file in the same directory with the following content:
-
-```
-MINIO_IMAGE_TAG=latest-arm64
-```
-
-Then, run the standard command:
-
 ```bash
 docker compose up -d
 ```
+
+The included `docker-compose.yml` uses `firstfinger/minio:latest` and works on both amd64 and arm64 without any extra configuration.
 
 ## Access Points
 
 | Service | URL | Purpose |
 |---------|-----|---------|
 | **MinIO API** | http://localhost:9000 | S3-compatible API |
-| **MinIO Console** | http://localhost:9001 | Basic built-in UI |
-| **MinIO Admin Console** | http://localhost:9002 | Full-featured admin UI ⭐ |
+| **MinIO Console** | http://localhost:9001 | Built-in UI |
+| **MinIO Admin Console** | http://localhost:9002 | Full-featured admin UI (Site Replication, etc.) |
 
-## Essential Environment Variables
+## Environment Variables
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `MINIO_ROOT_USER` | Root username | `admin` |
-| `MINIO_ROOT_PASSWORD` | Root password | `SecurePass123!` |
-| `MINIO_REGION` | AWS S3 region (defaults to us-east-1) | `us-east-1` |
-| `MINIO_CERTS_DIR` | (Optional) TLS cert directory inside container | `/data/.minio/certs` |
+### Required
 
-## Port Configuration
+| Variable | Description |
+|----------|-------------|
+| `MINIO_ROOT_USER` | S3 access key / root username |
+| `MINIO_ROOT_PASSWORD` | S3 secret key / root password |
+
+### Optional
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `MINIO_API_PORT` | `9000` | MinIO API port |
-| `MINIO_CONSOLE_PORT` | `9001` | MinIO console port |
-| `MINIO_ADMIN_CONSOLE_PORT` | `9002` | MinIO admin console port |
+| `MINIO_REGION` | `us-east-1` | AWS S3 region string |
+| `MINIO_CERTS_DIR` | `/data/.minio/certs` | TLS certificate directory |
+| `MINIO_API_PORT` | `9000` | Override API port |
+| `MINIO_CONSOLE_PORT` | `9001` | Override built-in console port |
+| `MINIO_ADMIN_CONSOLE_PORT` | `9002` | Override admin console port |
+| `CONSOLE_PBKDF_PASSPHRASE` | auto-generated | Admin console session passphrase |
+| `CONSOLE_PBKDF_SALT` | auto-generated | Admin console session salt |
 
-## Using MinIO Client
+## Using MinIO Client (mc)
 
 ```bash
-# Configure
-docker exec minio mc alias set local http://localhost:9000 admin your-password
+# Configure alias
+docker exec minio mc alias set local http://localhost:9000 your-access-key your-secret-key
 
 # Create bucket
 docker exec minio mc mb local/mybucket
 
 # Upload file
 docker exec minio mc cp /path/to/file local/mybucket/
+
+# List buckets
+docker exec minio mc ls local
 ```
-
-## Security Notes
-
-- Runs as non-root user (UID 1000)
-- Set proper data directory permissions: `sudo chown -R 1000:1000 ./data`
-- Change default credentials in production
-- Use TLS certificates by mounting to `/data/.minio/certs/`
-- Console secrets are auto-generated if not provided
 
 ## Enabling TLS
 
-1. **Create the cert directory on the data volume**
-   ```bash
-   mkdir -p ./data/.minio/certs
-   sudo chown -R 1000:1000 ./data/.minio
-   ```
-2. **Place your TLS materials inside that folder**
-   - `public.crt` – full certificate chain (leaf + intermediates). *The filename must stay `public.crt`; MinIO only auto-loads certs with that name.*
-   - `private.key` – private key for the certificate. *Likewise, keep the filename `private.key`.*
-   - Optional CA chain files go under `./data/.minio/certs/CAs/`
-3. **Start the container with the data volume mounted** (already required for persistence):
-   ```bash
-   docker run -d --name minio \
-     -v $(pwd)/data:/data \
-     -p 9000:9000 -p 9001:9001 -p 9002:9002 \
-     -e MINIO_ROOT_USER=admin \
-     -e MINIO_ROOT_PASSWORD=SecurePass123! \
-     firstfinger/minio:latest-amd64
-   ```
-4. The entrypoint automatically detects `public.crt` + `private.key`, points MinIO at `/data/.minio/certs`, and switches the readiness probe to HTTPS. No extra flags are required. Override the location with `MINIO_CERTS_DIR` if you need a different mount point.
-5. (Optional) Validate the HTTPS endpoint:
-   ```bash
-   curl -k https://localhost:9000/minio/health/live
-   ```
-   > Note: the admin console on port 9002 remains HTTP; terminate it behind your ingress/proxy if you require TLS end-to-end.
-6. **(Self-signed certificates)** Make sure the SAN (Subject Alternative Name) entries cover every hostname/IP you will visit (e.g., `localhost`, `10.1.1.20`). Install the issuing certificate (or CA) in your OS trust store to avoid browser warnings.
+Place your certificates inside the container at `${MINIO_CERTS_DIR}` (default `/data/.minio/certs`):
+
+```
+data/.minio/certs/
+├── public.crt    # Full certificate chain (leaf + intermediates)
+├── private.key   # Private key
+└── CAs/          # Optional: additional CA certs to trust
+    └── ca.crt
+```
+
+The entrypoint auto-detects `public.crt` + `private.key` and switches MinIO and the health probe to HTTPS automatically. No extra flags needed.
+
+```bash
+docker run -d --name minio \
+  -v $(pwd)/data:/data \
+  -p 9000:9000 -p 9001:9001 -p 9002:9002 \
+  -e MINIO_ROOT_USER=admin \
+  -e MINIO_ROOT_PASSWORD=SecurePass123! \
+  firstfinger/minio:latest
+```
+
+Validate after startup:
+```bash
+curl -k https://localhost:9000/minio/health/live
+```
+
+> For self-signed certificates, ensure the SAN covers every hostname/IP you access (e.g. `localhost`, `192.168.1.10`). Mount the issuing CA into `CAs/` so MinIO trusts it internally.
 
 ## Troubleshooting
 
-**Permission denied:** `sudo chown -R 1000:1000 ./data`
+**Port conflict:** Use custom port env vars — e.g. `-e MINIO_API_PORT=8000`
 
-**Port conflicts:** Use custom ports with `-e MINIO_API_PORT=8000`
+**Service not starting:** `docker logs minio`
 
-**Service not starting:** Check logs with `docker logs minio`
+**Region errors:** Set `MINIO_REGION` to match your client config (e.g. `us-east-1`, `ap-south-1`)
 
-**Region errors:** Ensure `MINIO_REGION` is set (e.g., `us-east-1`, `ap-south-1`)
+**Site Replication not visible:** Use the `1.7.3` tag — `firstfinger/minio:1.7.3`
 
 ## License
-You just DO WHAT THE FUCK YOU WANT TO. 
+
+You just DO WHAT THE FUCK YOU WANT TO.
