@@ -14,8 +14,8 @@ A production-ready Docker image that combines the latest MinIO server with the f
 
 | Tag | Console Version | When Updated |
 |-----|----------------|--------------|
-| `latest` | v1.7.6 | Daily + every push to main |
-| `1.7.3` | v1.7.3 (Site Replication) | Manual release only |
+| `latest` | v1.7.6 | Every push to main + weekly (Monday) |
+| `1.7.3` | v1.7.3 (Site Replication) | Every push to main + manual dispatch |
 
 Both tags are multi-arch OCI manifests — Docker automatically selects the right binary for your platform (`linux/amd64` or `linux/arm64`). No need to specify an architecture tag.
 
