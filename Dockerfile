@@ -4,12 +4,20 @@ ARG MINIO_VERSION=latest
 # Build web console UI
 FROM node:18-alpine AS console-ui-builder
 WORKDIR /app
-RUN apk add --no-cache git && \
+ENV GIT_TERMINAL_PROMPT=0
+RUN apk add --no-cache git jq && \
+    git clone https://github.com/OpenMaxIO/openmaxio-object-browser.git . && \
+    git checkout openMaxIO-main && \
+    MDS_REF=$(jq -r '.dependencies.mds' web-app/package.json) && \
+    MDS_URL=$(echo "$MDS_REF" | cut -d'#' -f1) && \
+    MDS_COMMIT=$(echo "$MDS_REF" | cut -d'#' -f2) && \
+    git clone "$MDS_URL" /tmp/mds && \
+    cd /tmp/mds && git checkout "$MDS_COMMIT" && \
+    cd /app/web-app && \
+    jq '.dependencies.mds = "file:///tmp/mds"' package.json > /tmp/pkg.json && \
+    mv /tmp/pkg.json package.json && \
     corepack enable && \
-    git clone https://github.com/minio/object-browser.git . && \
-    git checkout v1.7.6 && \
-    cd web-app && \
-    yarn install --frozen-lockfile && \
+    yarn install && \
     yarn build
 
 # Build console binary
@@ -20,8 +28,8 @@ ARG TARGETARCH
 ARG TARGETOS=linux
 WORKDIR /app
 RUN apk add --no-cache git make && \
-    git clone https://github.com/minio/object-browser.git . && \
-    git checkout v1.7.6
+    git clone https://github.com/OpenMaxIO/openmaxio-object-browser.git . && \
+    git checkout openMaxIO-main
 COPY --from=console-ui-builder /app/web-app/build ./web-app/build
 
 # Set GOOS and GOARCH for proper cross-compilation
@@ -86,12 +94,9 @@ LABEL maintainer="Anurag Vishwakarma <av7312002@gmail.com>" \
       org.opencontainers.image.version="${MINIO_VERSION}" \
       org.opencontainers.image.licenses="AGPL-3.0"
 
-# Install runtime dependencies and create user
+# Install runtime dependencies
 RUN apk add --no-cache ca-certificates curl bash && \
-    addgroup -g 1000 minio && \
-    adduser -D -u 1000 -G minio minio && \
-    mkdir -p /data /etc/minio/console && \
-    chown -R minio:minio /data /etc/minio
+    mkdir -p /data /etc/minio/console
 
 # Copy binaries
 COPY --from=server-builder /usr/bin/minio /usr/bin/minio
@@ -129,8 +134,6 @@ HEALTHCHECK --interval=30s --timeout=20s --start-period=5s --retries=3 \
     fi; \
     curl ${FLAGS} ${SCHEME}://localhost:${MINIO_API_PORT}/minio/health/live || exit 1'
 
-# Run as non-root user
-USER minio
 WORKDIR /data
 
 # Start services

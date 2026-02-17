@@ -1,7 +1,6 @@
 services:
   minio:
-    # To use an ARM64 image, create a .env file with: MINIO_IMAGE_TAG=latest-arm64
-    image: firstfinger/minio:${MINIO_IMAGE_TAG:-latest-amd64}
+    image: firstfinger/minio:latest
     container_name: minio
     ports:
       - "9000:9000"
@@ -25,5 +24,5 @@ services:
       # CONSOLE_PBK_DF_PASSPHRASE: your-secret-passphrase
       # CONSOLE_PBKDF_SALT: your-secret-salt
     volumes:
-      - ./data:/data # sudo chown -R 1000:1000 ./data
+      - ./data:/data
     restart: unless-stopped
