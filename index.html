@@ -198,6 +198,28 @@
             color: var(--black);
         }
 
+        .btn-onblack {
+            background: var(--white);
+            color: var(--black);
+            border-color: var(--white);
+        }
+
+        .btn-onblack:hover {
+            background: transparent;
+            color: var(--white);
+        }
+
+        .btn-invert {
+            background: transparent;
+            color: var(--white);
+            border-color: var(--white);
+        }
+
+        .btn-invert:hover {
+            background: var(--white);
+            color: var(--black);
+        }
+
         .btn-secondary:hover {
             background: var(--black);
             color: var(--white);
@@ -599,6 +621,25 @@
         </section>
 
         <section class="section">
+            <h2>Related Project</h2>
+            <div class="card" style="background: var(--black); color: var(--white);">
+                <h3 style="font-size: 2rem; font-weight: 900; letter-spacing: -0.02em;">Cairn</h3>
+                <p>Self-hosted, S3-compatible object storage, written from scratch in Rust. Object data as plain files
+                    on a normal filesystem, metadata in embedded SQLite. No external database, no clustering layer, no
+                    separate storage daemon &mdash; and the console ships inside the same binary.</p>
+                <p style="font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.7;">
+                    Apache&#8209;2.0 &nbsp;/&nbsp; linux/amd64 + arm64 &nbsp;/&nbsp; ghcr.io/harsh&#8209;2002/cairn</p>
+                <p
+                    style="border-left: 4px solid var(--white); padding-left: 1rem; font-weight: 700; margin-bottom: 1.5rem;">
+                    Active development. Not production&#8209;ready yet.</p>
+                <div>
+                    <a href="https://github.com/Harsh-2002/Cairn" class="btn btn-onblack" target="_blank">Repository</a>
+                    <a href="https://harsh-2002.github.io/Cairn/" class="btn btn-invert" target="_blank">Screenshots</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
             <h2>Recent Commits</h2>
             <div class="card">
                 <div id="commits-container">
@@ -883,7 +924,9 @@
                 <a href="https://github.com/Harsh-2002/MinIO"
                     style="color: inherit; text-decoration: underline;">GitHub</a> |
                 <a href="https://hub.docker.com/r/firstfinger/minio"
-                    style="color: inherit; text-decoration: underline;">Docker Hub</a>
+                    style="color: inherit; text-decoration: underline;">Docker Hub</a> |
+                <a href="https://github.com/Harsh-2002/Cairn"
+                    style="color: inherit; text-decoration: underline;">Cairn</a>
             </p>
             <p style="font-size: 0.8rem; color: var(--gray-500); margin-top: 1rem;">
                 You just DO WHAT THE FUCK YOU WANT TO.
