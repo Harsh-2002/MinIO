@@ -3,14 +3,21 @@ name: Build 1.7.3
 on:
   push:
     branches: [ main ]
+  schedule:
+    # Monthly, 2nd at 06:30 UTC - staggered a day after Build Latest so the two
+    # multi-arch QEMU builds do not contend for the same runner window.
+    - cron: '30 6 2 * *'
   workflow_dispatch:
+
+concurrency:
+  group: build-v173-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
     timeout-minutes: 240
 
     steps:
@@ -47,5 +54,7 @@ jobs:
           MINIO_VERSION=latest
           CONSOLE_VERSION=v1.7.3
           MDS_COMMIT=3025ce83976c286fb1e9c55095336d75ad82d8e6
+        cache-from: type=registry,ref=firstfinger/minio:buildcache-1.7.3
+        cache-to: type=registry,ref=firstfinger/minio:buildcache-1.7.3,mode=max
         provenance: false
         sbom: false
