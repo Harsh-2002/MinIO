@@ -61,12 +61,14 @@ RUN apk add --no-cache ca-certificates git make curl bash && \
     go install aead.dev/minisign/cmd/minisign@v0.2.1
 
 # Clone and build server
-RUN git clone https://github.com/minio/minio.git . && \
-    if [ "$MINIO_VERSION" != "latest" ]; then \
+# minio/minio is archived upstream (read-only; last code change 2025-10-24), so a
+# shallow clone of the exact ref is all that is ever needed.
+RUN if [ "$MINIO_VERSION" != "latest" ]; then \
         echo "Checking out version: $MINIO_VERSION" && \
-        git checkout ${MINIO_VERSION}; \
+        git clone --depth 1 --branch ${MINIO_VERSION} https://github.com/minio/minio.git . ; \
     else \
-        echo "Building from latest master"; \
+        echo "Building from latest master" && \
+        git clone --depth 1 https://github.com/minio/minio.git . ; \
     fi
 
 # Build server binary
@@ -78,8 +80,11 @@ RUN COMMIT_ID=$(git rev-parse --short HEAD) && \
     /usr/bin/minio --version
 
 # Download and verify client binary - use TARGETARCH instead of BUILDARCH
-RUN curl -s -q https://dl.min.io/client/mc/release/linux-${TARGETARCH}/mc -o /usr/bin/mc && \
-    curl -s -q https://dl.min.io/client/mc/release/linux-${TARGETARCH}/mc.minisig -o /usr/bin/mc.minisig && \
+# dl.min.io 302-redirects to GitHub Releases, so -L is required; without it curl saves
+# the HTML redirect stub and minisign rejects it. -f fails loudly on any HTTP error
+# instead of silently writing an error page over the binary.
+RUN curl -fsSL https://dl.min.io/client/mc/release/linux-${TARGETARCH}/mc -o /usr/bin/mc && \
+    curl -fsSL https://dl.min.io/client/mc/release/linux-${TARGETARCH}/mc.minisig -o /usr/bin/mc.minisig && \
     chmod +x /usr/bin/mc && \
     /go/bin/minisign -Vqm /usr/bin/mc -x /usr/bin/mc.minisig -P RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav && \
     /usr/bin/mc --version

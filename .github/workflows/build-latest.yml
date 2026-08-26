@@ -6,15 +6,21 @@ on:
   pull_request:
     branches: [ main ]
   schedule:
-    - cron: '30 6 * * 1'  # Every Monday at 06:30 UTC
+    # Monthly, 1st at 06:30 UTC. All build inputs are pinned/frozen upstream
+    # (minio/minio is archived, console + mds are pinned refs, mc is frozen),
+    # so the only thing a rebuild picks up is Alpine base-image security patches.
+    - cron: '30 6 1 * *'
   workflow_dispatch:
+
+concurrency:
+  group: build-latest-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
     timeout-minutes: 240
 
     steps:
@@ -52,5 +58,9 @@ jobs:
           MINIO_VERSION=latest
           CONSOLE_VERSION=v1.7.6
           MDS_COMMIT=027fb7f9834e2bd6daba7f62a9d04d9a3606fbe1
+        # Registry cache, not type=gha: GitHub evicts unused caches after 7 days,
+        # which would leave every monthly run cold. This persists in Docker Hub.
+        cache-from: type=registry,ref=firstfinger/minio:buildcache-latest
+        cache-to: ${{ github.event_name != 'pull_request' && 'type=registry,ref=firstfinger/minio:buildcache-latest,mode=max' || '' }}
         provenance: false
         sbom: false

@@ -14,8 +14,13 @@ A production-ready Docker image that combines the latest MinIO server with the f
 
 | Tag | Console Version | When Updated |
 |-----|----------------|--------------|
-| `latest` | v1.7.6 | Every push to main + weekly (Monday) |
-| `1.7.3` | v1.7.3 (Site Replication) | Every push to main + manual dispatch |
+| `latest` | v1.7.6 | Every push to main + monthly (1st) |
+| `1.7.3` | v1.7.3 (Site Replication) | Every push to main + monthly (2nd) |
+
+> Rebuilds are monthly rather than weekly because every source input is frozen upstream —
+> `minio/minio` is archived, the console and `mds` refs are pinned, and `mc` has not been
+> republished since `RELEASE.2025-08-13`. A scheduled rebuild exists to pick up Alpine
+> base-image security patches, nothing else.
 
 Both tags are multi-arch OCI manifests — Docker automatically selects the right binary for your platform (`linux/amd64` or `linux/arm64`). No need to specify an architecture tag.
 
