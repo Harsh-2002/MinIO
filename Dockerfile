@@ -71,6 +71,15 @@ RUN if [ "$MINIO_VERSION" != "latest" ]; then \
         git clone --depth 1 https://github.com/minio/minio.git . ; \
     fi
 
+# Pre-fetch modules with retries. proxy.golang.org intermittently drops an HTTP/2
+# stream mid-download; without a retry one flaky zip kills the whole multi-arch build.
+RUN n=1; while [ $n -le 5 ]; do \
+        go mod download && break; \
+        echo "go mod download failed (attempt $n/5), retrying in 10s"; \
+        n=$((n+1)); sleep 10; \
+    done; \
+    [ $n -le 5 ] || { echo "go mod download failed after 5 attempts"; exit 1; }
+
 # Build server binary
 RUN COMMIT_ID=$(git rev-parse --short HEAD) && \
     echo "Building version: $MINIO_VERSION commit: $COMMIT_ID" && \
